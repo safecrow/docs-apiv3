@@ -2,10 +2,11 @@
 # Документация API SafeCrow V3
 ##### версия документа 3.02  
 ### Версии документа  
+
 Версия | Дата | Предмет изменений
------------- | -------------
+------------ | ------------- | -------------
 3.01 | 22-02-2018 | Первый выпуск документа
-3.02 | 19-03-2018 | Добавлена возможность прикреплять файлы к сделке и просматривать их  
+3.02 | 19-03-2018 | Добавлена возможность прикреплять файлы к сделке и просматривать их
 
 ## Оглавление  
 1. [Введение](#intro)  
@@ -63,7 +64,7 @@
 | accepts_conditions | `true` – пользователь принял соглашение safecrow
 | phone | номер мобильного телефона
 | name | Имя Фамилия
-| email | e-mail пользователя  
+| email | e-mail пользователя
 
 *Пример запроса*  
 
@@ -82,7 +83,7 @@ POST /users
 {
   "id": 467,
   "email": null,
-  "phone": “79251234567”,
+  "phone": "79251234567",
   "name": "Вася Васильев",
   "registered_at": "2018-02-05T12:17:01+03:00"
 }
@@ -159,7 +160,7 @@ phone | номер мобильного телефона
 ```json
 POST /users/467
 {
-  "phone": "79161540474"
+  "phone": "79161540474",
   "name": "Иван Васильев"
 }
 ```
@@ -189,7 +190,8 @@ POST /users/467
 | price | integer (в копейках, минимум 100 руб (10000)) 
 | description | string 
 | fee_payer | “50/50”, “consumer” или “supplier”
-**Второстепенные** | extra | ассоциативный массив - дополнительная информация  
+**Второстепенные** | |
+| extra | ассоциативный массив - дополнительная информация  
 
 *Пример запроса*
 ```json
@@ -414,8 +416,8 @@ GET /users/467/cards
 
 ## <a name="bind-card">Привязать карту к сделке</a>  
 
-Для выплаты продавцу `(supplier)` будет использована одна из ранее привязанных к нему карт, к запросу `POST /users/:user_id/orders/:order_id/bind_card` требуется добавить `переменную id` карты [(узнать id)](#show-user-cards"). 
- 
+Для выплаты продавцу `(supplier)` будет использована одна из ранее привязанных к нему карт, к запросу `POST /users/:user_id/orders/:order_id/bind_card` требуется добавить `переменную id` карты – [узнать id](#show-user-cards). 
+
 *Пример запроса*
 ```json  
 POST /users/466/orders/29/bind_card  
@@ -463,7 +465,7 @@ method | full, with_commission, with_penalty
 ```json  
 POST /orders/51/cancel
 {
- "reason": “Some important reason”,
+ "reason": "Some important reason",
  "method": "full"
 }
 ``` 
@@ -534,7 +536,7 @@ reason | string
 ```json
 POST /orders/32/exception
 {
- “reason”: “Some important reason”
+ "reason": "Some important reason"
 }
 ```
 
@@ -589,8 +591,8 @@ user_id | id пользователя, от имени которого прик
 ```json
 POST /orders/44/attachments
 {
-  "type": “text”,
-  "body": {"text": “there is some text”},
+  "type": "text",
+  "body": {"text": "there is some text"},
   "user_id": 467
 }
 ```  
@@ -599,10 +601,10 @@ POST /orders/44/attachments
 ```json
 POST /orders/44/attachments
 {
-  "type": “image”,
+  "type": "image",
   "body": {
-            "file": “AAABAAEAE...A==",
-            "file_name": File.png
+            "file": "AAABAAEAE...A==",
+            "file_name": "File.png"
           },
   "user_id": 467
 }
