@@ -63,7 +63,6 @@
 
  | Переменные | Данные
 ------------ | -------------
-| accepts_conditions | `true` – пользователь принял соглашение safecrow
 | phone | номер мобильного телефона
 | name | Имя Фамилия
 | email | e-mail пользователя
@@ -74,7 +73,7 @@
 POST /users
  
 {
-  "accepts_conditions": true,
+  "email": "ivan@example.com",
   "phone": "79251234567",
   "name": "Иван Иванов"
 }
@@ -84,9 +83,9 @@ POST /users
 ```json
 {
   "id": 467,
-  "email": null,
+  "email": "ivan@example.com,
   "phone": "79251234567",
-  "name": "Вася Васильев",
+  "name": "Иван Иванов",
   "registered_at": "2018-02-05T12:17:01+03:00"
 }
 ```
@@ -95,15 +94,18 @@ POST /users
 #### Сообщения об ошибках:  
 *Пример*  
 ```json
-"errors": {
-    "accepts_conditions": [
-      "Key must be present!"
-    ]
- }
+{
+  "errors": [
+    {
+      "name": "required field"
+    },
+    {
+      "user_exists": "user with email ivan@example.com already exists"
+    }
+  ]
+}
 ```
-**`“Key must be present!”`** - поле не было передано
-
-**`"Set terms to true"`** - примите условия, значение переменной `accepts_conditions` должно быть `true`  
+**`“required field”`** - поле не было передано
 
 ## <a name="user-list">Посмотреть список пользователей</a>  
 
@@ -151,7 +153,6 @@ GET /users/467
 
 Переменные | Данные
 ------------ | -------------
-accepts_conditions | `true` – пользователь принял соглашение SafeCrow
 email | e-mail пользователя
 name | Имя Фамилия
 phone | номер мобильного телефона
