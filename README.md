@@ -350,7 +350,7 @@ Cтатус сделки изменится на `paid`.
 
 ## <a name="user-card">Привязать банковскую карточку к пользователю</a>  
 
-Для привязки карты используйте запрос - `POST /users/:user_id/bind_card`
+Для привязки карты используйте запрос - `POST /users/:user_id/cards`
 
 
 Переменные | Данные
@@ -359,7 +359,7 @@ redirect_url | ссылка (String)
 
 *Пример запроса*  
 ```json
- POST /users/467/bind_card
+ POST /users/467/cards
   {
     "redirect_url": "http://example.com/return/url"
   }
@@ -368,7 +368,7 @@ redirect_url | ссылка (String)
 *Пример ответа*  
 ```json
 {
-  "card_binding_url": "https://safecrow.ru/finances/card_binding/467?jsOperationId             
+  "redirect_url": "https://safecrow.ru/finances/card_binding/467?jsOperationId             
   =binding_5ae972a2-e5bb-4913-83a1-ac7408e30f54&return_to="
 }
 ```
