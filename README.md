@@ -83,7 +83,7 @@ POST /users
 ```json
 {
   "id": 467,
-  "email": "ivan@example.com,
+  "email": "ivan@example.com",
   "phone": "79251234567",
   "name": "Иван Иванов",
   "registered_at": "2018-02-05T12:17:01+03:00"
@@ -100,7 +100,7 @@ POST /users
       "name": "required field"
     },
     {
-      "user_exists": "user with email ivan@example.com already exists"
+      "email": "user with email ivan@example.com already exists"
     }
   ]
 }
@@ -190,7 +190,7 @@ POST /users/467
 | supplier_id | integer 
 | price | integer (в копейках, минимум 100 руб (10000)) 
 | description | string 
-| fee_payer | “50/50”, “consumer” или “supplier”
+| service_cost_payer | “50/50”, “consumer” или “supplier”
 **Второстепенные** | |
 | extra | ассоциативный массив - дополнительная информация  
 
@@ -202,7 +202,7 @@ POST /orders
   "supplier_id": 466,
   "price": 10000,
   "description":"something",
-  "fee_payer":"50/50",
+  "service_cost_payer":"50/50"
 }
 ```
 
@@ -213,14 +213,12 @@ POST /orders
   "consumer_id": 467,
   "supplier_id": 466,
   "price": 10000,
-  "fee": 400,
-  "fee_payer": "50/50",
+  "consumer_service_cost": 200,
+  "supplier_service_cost": 200,
   "status": "pending",
   "description": "something",
   "supplier_payout_method_id": null,
-  "consumer_payout_method_id": null,
   "supplier_payout_method_type": null,
-  "consumer_payout_method_type": null,
   "created_at": "2018-02-07T18:32:17+03:00",
   "updated_at": "2018-02-07T18:32:17+03:00",
   "extra": {
@@ -252,14 +250,12 @@ GET /users/467/orders
   "consumer_id": 467,
   "supplier_id": 466,
   "price": 10000,
-  "fee": 400,
-  "fee_payer": "50/50",
+  "consumer_service_cost": 200,
+  "supplier_service_cost": 200,
   "status": "pending",
   "description": "someting",
   "supplier_payout_method_id": null,
-  "consumer_payout_method_id": null,
   "supplier_payout_method_type": null,
-  "consumer_payout_method_type": null,
   "created_at": "2018-02-07T18:32:17+03:00",
   "updated_at": "2018-02-07T18:32:17+03:00",
   "extra": {
@@ -329,7 +325,7 @@ POST /orders/29/pay
 {
   "payment_url":"https://staging.safecrow.ru/finances/29/pay?jsOperationId=3e1ba729e68445c4a37
     062c556385&return_to=",
-  "consumer_pay": 102.0
+  "consumer_pay": 102000
 }
 ```  
 В ответе по ссылке осуществляется оплата, после чего происходит редирект на указанный в запросе url, к которому добавляются параметры:
@@ -410,13 +406,13 @@ GET /users/467/cards
 
 ## <a name="bind-card">Привязать карту к сделке</a>  
 
-Для выплаты продавцу `(supplier)` будет использована одна из ранее привязанных к нему карт, к запросу `POST /users/:user_id/orders/:order_id/bind_card` требуется добавить `переменную id` карты – [узнать id](#show-user-cards). 
+Для выплаты продавцу `(supplier)` будет использована одна из ранее привязанных к нему карт, к запросу `POST /users/:user_id/orders/:order_id` требуется добавить `переменную id` карты – [узнать id](#show-user-cards). 
 
 *Пример запроса*
 ```json  
-POST /users/466/orders/29/bind_card  
+POST /users/466/orders/29  
   {
-    "card_id": 467
+    "supplier_payout_card_id": 467
   }
 ``` 
 
@@ -449,14 +445,12 @@ POST /users/466/orders/29/bind_card
 Переменные | Данные
 ------------ | -------------
 reason | String
-method | full, with_commission, with_penalty
 
 *Пример запроса*
 ```json  
 POST /orders/51/cancel
 {
- "reason": "Some important reason",
- "method": "full"
+ "reason": "Some important reason"
 }
 ``` 
 
@@ -485,11 +479,11 @@ POST /orders/51/cancel
 Сделка переходит в статус - отмена  `(cancelled)`. Покупателю выплачивается сумма оплаты - 104 рубля.  
 
 ## <a name="close">Закрыть сделку</a> 
-Успешное завершение сделки - `GET /orders/:order_id/close`  
+Успешное завершение сделки - `POST /orders/:order_id/close`  
 
 *Пример запроса*
 ```json  
-GET /orders/30/close
+POST /orders/30/close
 ``` 
 
 *Пример ответа*
@@ -513,8 +507,8 @@ GET /orders/30/close
 ```  
 Сделка завершена `(status: closed)`. Затем на карту продавца (id 180) SafeCrow переведет сумму сделки.  
 
-## <a name="exception">Эскалировать сделку (открыть претензию)</a>  
-Если покупатель недоволен качеством товара, сделка передается специалистам SafeCrow - `POST /orders/:order_id/exception`
+## <a name="escalate">Открыть претензию (передать сделку в арбитраж)</a>  
+Если покупатель недоволен качеством товара, сделка передается специалистам SafeCrow - `POST /orders/:order_id/escalate`
 
 Следует указать причину `reason (String)`
 
@@ -524,7 +518,7 @@ reason | string
 
 *Пример запроса*
 ```json
-POST /orders/32/exception
+POST /orders/32/escalate
 {
  "reason": "Some important reason"
 }
@@ -538,7 +532,7 @@ POST /orders/32/exception
   "price": 10000,
   "fee": 400,
   "fee_payer": "50/50",
-  "status": "exception",
+  "status": "escalated",
   "description": "something",
   "supplier_payout_method_id": 180,
   "consumer_payout_method_id": 179,
@@ -550,7 +544,7 @@ POST /orders/32/exception
   }
 ```  
 
-Сделка переходит в статус `"exception"`, специалисты сэйфкроу разрешают претензию, после чего сделка закрывается (status: closed) или отменяется (status: canceled)  
+Сделка переходит в статус `"escalated"`, специалисты сэйфкроу разрешают претензию, после чего сделка закрывается (status: closed) или отменяется (status: canceled)  
 
 
 ## <a name="add-attaches">Добавить вложение (Attaches)</a>  
