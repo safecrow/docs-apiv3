@@ -114,17 +114,23 @@ POST /users
 ```json
 GET /users
 ```
+Для поиска пользователя по email к запросу нужно добавть параметр email
+
+*Пример запроса*
+```json
+GET /users?email=test@email.com
+```
 
 *Пример ответа*
 ```json
-{
+[{
     "id": 467,
     "email": "test@email.com",
     "phone": null,
     "name": "Вася Васильев",
     "registered_at": "2018-02-05T12:17:01+03:00"
  
- }
+ }]
 ```
 
 ## <a name="user-info">Посмотреть данные пользователя</a>  
