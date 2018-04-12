@@ -796,7 +796,7 @@ POST /orders/:order_id/preauth/release
   "price": 10000,
   "consumer_service_cost": 200,
   "supplier_service_cost": 200,
-  "status": "closed",
+  "status": "pending",
   "description": "something",
   "supplier_payout_method_id": 180,
   "consumer_payout_method_id": null,
