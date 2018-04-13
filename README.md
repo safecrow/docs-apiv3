@@ -1,6 +1,6 @@
 [![SafeCrow](safecrow.svg)](https://www.safecrow.ru/)
 # Документация API SafeCrow V3
-##### версия документа 3.03  
+##### версия документа 3.04  
 ### Версии документа  
 
 Версия | Дата | Предмет изменений
@@ -796,7 +796,7 @@ POST /orders/:order_id/preauth/release
   "price": 10000,
   "consumer_service_cost": 200,
   "supplier_service_cost": 200,
-  "status": "closed",
+  "status": "pending",
   "description": "something",
   "supplier_payout_method_id": 180,
   "consumer_payout_method_id": null,
