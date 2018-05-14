@@ -138,14 +138,14 @@ GET /users?email=test@email.com
 
 *Пример ответа*
 ```json
-[{
+{
     "id": 467,
     "email": "test@email.com",
     "phone": null,
     "name": "Вася Васильев",
     "registered_at": "2018-02-05T12:17:01+03:00"
  
- }]
+ }
 ```
 
 ## <a name="user-info">Посмотреть данные пользователя</a>  
@@ -198,17 +198,20 @@ POST /users/467
 }
 ```  
 
-К пользователю 467 был добавлен телефон и изменено имя.
+У пользователя 467 были изменены телефон и имя.
 
-## <a name="calculate">Расчет стоимости комиссии SafeCrow и стоимости отмены</a>  
+## <a name="calculate">Расчет стоимости комиссии SafeCrow</a>  
 
-Для расчета стоимости комиссии SafeCrow и стоимости отмены используется запрос `POST /calculate`.
+Для расчета стоимости комиссии SafeCrow используйте `POST /calculate`.
+
+Поле `consumer_cancellation_cost` входит в разряд дополнительных возможностей и требует отдельного договора. Данное поле предоставляет возможность оштрафовать Покупателя за отмену, по вашему желанию. Например, если товар уже ушел от Продавца Покупателю, оштрафовать Покупателя на стоимость обратной доставки.
+
 
 Переменные | Данные
 ------------ | -------------
-price | стоимость сделки
-service_cost_payer | кто платит комиссию сервиса
-consumer_cancellation_cost | сумма, которая вернется покупателю при отмене
+price | стоимость сделки, в копейках
+service_cost_payer | “50/50” или “consumer” или “supplier”
+consumer_cancellation_cost | штраф покупателя за отмену. сумма в копейках
 
 *Пример запроса*
 
@@ -217,7 +220,7 @@ POST /calculate
 {
    "price":100000,
    "service_cost_payer":"50/50",
-   "consumer_cancellation_cost":19000
+   "consumer_cancellation_cost": 0
 }
 ``` 
 
@@ -227,7 +230,7 @@ POST /calculate
    "price":100000,
    "supplier_service_cost":2000,
    "consumer_service_cost":2000,
-   "consumer_cancellation_cost":19000
+   "consumer_cancellation_cost": 0 
 }
 ```  
 
@@ -241,7 +244,7 @@ POST /calculate
 | supplier_id | integer 
 | price | integer (в копейках, минимум 100 руб (10000)) 
 | description | string 
-| service_cost_payer | “50/50”, “consumer” или “supplier”
+| service_cost_payer | “50/50” или “consumer” или “supplier”
 **Второстепенные** | |
 | extra | ассоциативный массив - дополнительная информация  
 
