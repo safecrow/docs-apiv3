@@ -800,11 +800,22 @@ POST /orders/:order_id/preauth/confirm
 *Пример ответа:*
 
 ```
-{
- "payment_url":"https://staging.safecrow.ru/finances/29/pay?jsOperationId=3e1ba729e68445c4a37
-   062c556385&return_to=",
- "consumer_pay": 10200
-}
+"id": 30,
+ "consumer_id": 467,
+ "supplier_id": 466,
+ "price": 10000,
+ "consumer_service_cost": 200,
+ "supplier_service_cost": 200,
+ "status": "preauthorized",
+ "description": "something",
+ "supplier_payout_method_id": 180,
+ "consumer_payout_method_id": null,
+ "supplier_payout_method_type": "CreditCard",
+ "consumer_payout_method_type": null,
+ "created_at": "2018-02-07T19:52:08+03:00",
+ "updated_at": "2018-02-14T14:24:14+03:00",
+ "extra": {
+ }
 ```
 
 Если сделка не была подтверждена - необходимо произвести отмену преавторизации. Статус сделки при этом меняется на `pending`.
@@ -827,7 +838,7 @@ POST /orders/:order_id/preauth/release
  "price": 10000,
  "consumer_service_cost": 200,
  "supplier_service_cost": 200,
- "status": "closed",
+ "status": "pending",
  "description": "something",
  "supplier_payout_method_id": 180,
  "consumer_payout_method_id": null,
