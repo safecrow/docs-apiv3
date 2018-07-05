@@ -28,7 +28,7 @@
 15. [Привязать карту к сделке](#bind-card)  
 16. [Отменить сделку](#canceled)  
 17. [Закрыть сделку](#close)  
-18. [Эскалировать сделку/открыть претензию](#exception)  
+18. [Эскалировать сделку/открыть претензию](#escalate)  
 19. [Добавить вложение (Attaches)](#add-attaches)   
 20. [Просмотреть вложения](#show-attaches)  
 21. [Настройки](#settings)  
@@ -524,25 +524,26 @@ POST /orders/51/cancel
 ```
 
 *Пример ответа*
+
 ```json
-{
-  "id": 51,
-  "consumer_id": 467,
-  "supplier_id": 466,
-  "price": 10000,
-  "consumer_service_cost": 400,
-  "supplier_service_cost": 0,
-  "status": "cancelled",
-  "description": "something",
-  "supplier_payout_method_id": 180,
-  "consumer_payout_method_id": null,
-  "supplier_payout_method_type": "CreditCard",
-  "consumer_payout_method_type": null,
-  "created_at": "2018-02-21T11:18:40+03:00",
-  "updated_at": "2018-02-22T14:43:15+03:00",
-  "extra": {
-  }
-}
+id":51,
+ "consumer_id":467,
+ "supplier_id":466,
+ "price":10000,
+ "consumer_service_cost":400,
+ "supplier_service_cost":0,
+ "consumer_delivery_cost":0,
+ "supplier_delivery_cost":0,
+ "consumer_cancellation_cost":0,
+ "discount":0,
+ "description":null,
+ "status":"cancelled",
+ "supplier_payout_method_id":null,
+ "supplier_payout_method_type":null,
+ "created_at":"2018-07-05T15:53:41+03:00",
+ "updated_at":"2018-07-05T15:53:41+03:00",
+ "extra":{
+ }
 ```  
 
 Сделка переходит в статус - отмена  `(cancelled)`. Покупателю возвращается сумма оплаты - 100 рубля.  
@@ -550,31 +551,45 @@ POST /orders/51/cancel
 ## <a name="close">Закрыть сделку</a>
 Успешное завершение сделки - `POST /orders/:order_id/close`  
 
+Переменные | Данные
+------------ | -------------
+reason | String, причина закрытия
+discount | размер скидки (в копейках)
+
+В случае, если пользователи договорились о скидке, то в поле Discount указывается размер скидки в копейках. 
+Сумма из поля Discount будет вычтена из суммы выплаты Продавцу.
+
 *Пример запроса*
 ```json  
 POST /orders/30/close
 ```
 
 *Пример ответа*
+
 ```json
-"id": 30,
-  "consumer_id": 467,
-  "supplier_id": 466,
-  "price": 10000,
-  "consumer_service_cost": 200,
-  "supplier_service_cost": 200,
-  "status": "closed",
-  "description": "something",
-  "supplier_payout_method_id": 180,
-  "consumer_payout_method_id": null,
-  "supplier_payout_method_type": "CreditCard",
-  "consumer_payout_method_type": null,
-  "created_at": "2018-02-07T19:52:08+03:00",
-  "updated_at": "2018-02-14T14:24:14+03:00",
-  "extra": {
-  }
-```  
+"id":4560,
+ "consumer_id":467,
+ "supplier_id":466,
+ "price":10000,
+ "consumer_service_cost":200,
+ "supplier_service_cost":200,
+ "consumer_delivery_cost":0,
+ "supplier_delivery_cost":0,
+ "consumer_cancellation_cost":0,
+ "discount":20000,
+ "description":null,
+ "status":"closed",
+ "supplier_payout_method_id":602,
+ "supplier_payout_method_type":"CreditCard",
+ "created_at":"2018-07-03T10:04:54+03:00",
+ "updated_at":"2018-07-03T10:04:54+03:00",
+ "extra":{
+ }
+ ```
 Сделка завершена `(status: closed)`. Затем на карту продавца (id 180) SafeCrow переведет сумму сделки.  
+
+Сообщения об ошибках:
+"errors":[ "discount is too big" ] - выплата Продавцу менее 100 рублей
 
 ## <a name="escalate">Эскалировать сделку/открыть претензию</a>  
 Если покупатель недоволен качеством товара, сделка передается специалистам SafeCrow - `POST /orders/:order_id/escalate`
