@@ -461,15 +461,10 @@ GET /users/467/cards
 ```json
 {
   "id": 179,
-  "card_binding": "5ae972a2-e5bb-4913-83a1-ac7408e30f54",
   "card_holder": "CARD HOLDER",
   "card_number": "492950XXXXXX6878",
-  "card_expiration_year": 2020,
-  "card_expiration_month": 10,
-  "status": "success",
-  "created_at": "2018-02-06T16:46:21+03:00",
-  "updated_at": "2018-02-06T16:46:22+03:00",
-  "user_id": 467
+  "expires": "10/20",
+  "bound_at": "2018-02-06T16:46:22+03:00",
 }
 ```  
 Если карта не была привязана - в ответ придет пустой список.  
