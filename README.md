@@ -403,7 +403,7 @@ POST /orders/29/pay
 Параметры | Данные
 ------------ | -------------
 orderId | id сделки + _ + случайное число  (11_a43234)
-status | success или fail
+status | success или failed
 type | pay  
 
 *Пример ссылки*
