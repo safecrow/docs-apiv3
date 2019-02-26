@@ -90,7 +90,7 @@ POST /users
 
 {
   "email": "ivan@example.com",
-  "phone": "79251234567",
+  "phone": "79998887777",
   "name": "Иван Иванов"
 }
 ```
@@ -100,7 +100,7 @@ POST /users
 {
   "id": 467,
   "email": "ivan@example.com",
-  "phone": "79251234567",
+  "phone": "79998887777",
   "name": "Иван Иванов",
   "registered_at": "2018-02-05T12:17:01+03:00"
 }
@@ -138,12 +138,19 @@ GET /users
 GET /users?email=test@email.com
 ```
 
+Для поиска пользователя по телефону к запросу нужно добавть параметр phone
+
+*Пример запроса*
+```json
+GET /users?phone=79998887777
+```
+
 *Пример ответа*
 ```json
 {
     "id": 467,
     "email": "test@email.com",
-    "phone": null,
+    "phone": "79998887777",
     "name": "Вася Васильев",
     "registered_at": "2018-02-05T12:17:01+03:00"
 
@@ -164,7 +171,7 @@ GET /users/467
 {
   "id": 467,
   "email": "test@email.com",
-  "phone": null,
+  "phone": "79998887777",
   "name": "Вася Васильев",
   "registered_at": "2018-02-05T12:17:01+03:00"
 }
@@ -184,7 +191,7 @@ phone | номер мобильного телефона
 ```json
 POST /users/467
 {
-  "phone": "79161540474",
+  "phone": "79998887777",
   "name": "Иван Васильев"
 }
 ```
@@ -194,7 +201,7 @@ POST /users/467
 {
   "id": 467,
   "email": "test@email.com",
-  "phone": "79161540474",
+  "phone": "79998887777",
   "name": "Иван Васильев",
   "registered_at": "2018-02-05T12:17:01+03:00"
 }
