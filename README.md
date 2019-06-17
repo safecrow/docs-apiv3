@@ -117,12 +117,12 @@ POST /users
       "name": "required field"
     },
     {
-      "email": "user with email ivan@example.com already exists"
+      "email": "user with email ivan@example.com and/or phone 79251234567 already exists"
     }
   ]
 }
 ```
-**`“required field”`** - поле не было передано
+**`“required field”`** - ошибка в обязательном поле. Поле либо не было передано, либо содержит ошибку.
 
 ## <a name="user-list">Посмотреть список пользователей</a>
 
@@ -273,22 +273,31 @@ POST /orders
 *Пример ответа*
 ```json
 {
-  "id": 29,
+  "id": 37606,
   "consumer_id": 467,
   "supplier_id": 466,
   "price": 10000,
-  "consumer_service_cost": 200,
-  "supplier_service_cost": 200,
+  "consumer_payment_method_type": "CreditCard",
+  "consumer_payout_method_id": null,
+  "supplier_payout_method_id": null,
+  "consumer_payout_method_type": "CreditCard",
+  "supplier_payout_method_type": "CreditCard",
+  "consumer_service_cost": 500,
+  "supplier_service_cost": 500,
   "status": "pending",
   "description": "something",
-  "supplier_payout_method_id": null,
-  "supplier_payout_method_type": null,
-  "created_at": "2018-02-07T18:32:17+03:00",
-  "updated_at": "2018-02-07T18:32:17+03:00",
+  "consumer_delivery_cost": 0,
+  "supplier_delivery_cost": 0,
+  "consumer_cancellation_cost": 0,
+  "discount": 0,
+  "consumer_payment_method_id": null,
+  "created_at": "2019-06-17T14:35:08+03:00",
+  "updated_at": "2019-06-17T14:35:08+03:00",
   "extra": {
   }
 }
 ```
+
 Была создана сделка 29, стоимость сделки 100 рублей, комиссия составляет 4 рубля и  платится пользователями пополам. В этот момент статус сделки становится `“pending”`.
 #### Сообщения об ошибках:
 **`"extra": "Некорректный тип данных"`** - должен передаваться ассоциативный массив `ключ-значение`
@@ -493,22 +502,30 @@ POST /users/466/orders/29
 
 *Пример ответа*
 ```json
-"id": 29,
-  "consumer_id": 467,
-  "supplier_id": 466,
-  "price": 10000,
-  "consumer_service_cost": 200,
-  "supplier_service_cost": 200,
-  "status": "paid",
+{
+  "id": 467,
   "description": "something",
-  "supplier_payout_method_id": 180,
+  "price": 10000,
+  "supplier_id": 98918,
+  "consumer_id": 98917,
+  "status": "paid",
   "consumer_payout_method_id": null,
+  "supplier_payout_method_id": 28198,
+  "consumer_payout_method_type": "CreditCard",
   "supplier_payout_method_type": "CreditCard",
-  "consumer_payout_method_type": null,
-  "created_at": "2018-02-13T10:56:40+03:00",
-  "updated_at": "2018-02-13T14:35:25+03:00",
+  "consumer_service_cost": 500,
+  "supplier_service_cost": 500,
+  "consumer_delivery_cost": 0,
+  "supplier_delivery_cost": 0,
+  "consumer_cancellation_cost": 0,
+  "discount": 0,
+  "consumer_payment_method_type": "CreditCard",
+  "consumer_payment_method_id": null,
+  "created_at": "2019-06-17T14:35:08+03:00",
+  "updated_at": "2019-06-17T16:40:40+03:00",
   "extra": {
   }
+}
 ```
 Ответ - описание сделки, в полях `supplier_payout_method_id` и `type` указана информация соответственно об `id карты` и `типе выплаты`.
 
@@ -551,24 +568,30 @@ POST /orders/51/cancel
 *Пример ответа*
 
 ```json
-id":51,
- "consumer_id":467,
- "supplier_id":466,
- "price":10000,
- "consumer_service_cost":400,
- "supplier_service_cost":0,
- "consumer_delivery_cost":0,
- "supplier_delivery_cost":0,
- "consumer_cancellation_cost":0,
- "discount":0,
- "description":null,
- "status":"cancelled",
- "supplier_payout_method_id":null,
- "supplier_payout_method_type":null,
- "created_at":"2018-07-05T15:53:41+03:00",
- "updated_at":"2018-07-05T15:53:41+03:00",
- "extra":{
- }
+{
+  "id": 467,
+  "description": "something",
+  "price": 10000,
+  "supplier_id": 98918,
+  "consumer_id": 98917,
+  "status": "cancelled",
+  "consumer_payout_method_id": null,
+  "supplier_payout_method_id": 28198,
+  "consumer_payout_method_type": "CreditCard",
+  "supplier_payout_method_type": "CreditCard",
+  "consumer_service_cost": 500,
+  "supplier_service_cost": 500,
+  "consumer_delivery_cost": 0,
+  "supplier_delivery_cost": 0,
+  "consumer_cancellation_cost": 0,
+  "discount": 0,
+  "consumer_payment_method_type": "CreditCard",
+  "consumer_payment_method_id": null,
+  "created_at": "2019-06-17T14:35:08+03:00",
+  "updated_at": "2019-06-17T16:40:40+03:00",
+  "extra": {
+  }
+}
 ```
 
 Сделка переходит в статус - отмена  `(cancelled)`. Покупателю возвращается сумма оплаты - 100 рубля.
@@ -592,24 +615,30 @@ POST /orders/30/close
 *Пример ответа*
 
 ```json
-"id":4560,
- "consumer_id":467,
- "supplier_id":466,
- "price":10000,
- "consumer_service_cost":200,
- "supplier_service_cost":200,
- "consumer_delivery_cost":0,
- "supplier_delivery_cost":0,
- "consumer_cancellation_cost":0,
- "discount":20000,
- "description":null,
- "status":"closed",
- "supplier_payout_method_id":602,
- "supplier_payout_method_type":"CreditCard",
- "created_at":"2018-07-03T10:04:54+03:00",
- "updated_at":"2018-07-03T10:04:54+03:00",
- "extra":{
- }
+{
+  "id": 467,
+  "description": "something",
+  "price": 10000,
+  "supplier_id": 98918,
+  "consumer_id": 98917,
+  "status": "closed",
+  "consumer_payout_method_id": null,
+  "supplier_payout_method_id": 28198,
+  "consumer_payout_method_type": "CreditCard",
+  "supplier_payout_method_type": "CreditCard",
+  "consumer_service_cost": 500,
+  "supplier_service_cost": 500,
+  "consumer_delivery_cost": 0,
+  "supplier_delivery_cost": 0,
+  "consumer_cancellation_cost": 0,
+  "discount": 0,
+  "consumer_payment_method_type": "CreditCard",
+  "consumer_payment_method_id": null,
+  "created_at": "2019-06-17T14:35:08+03:00",
+  "updated_at": "2019-06-17T16:40:40+03:00",
+  "extra": {
+  }
+}
  ```
 Сделка завершена `(status: closed)`. Затем на карту продавца (id 180) SafeCrow переведет сумму сделки.
 
@@ -635,22 +664,30 @@ POST /orders/32/escalate
 
 *Пример ответа*
 ```json
-"id": 32,
-  "consumer_id": 467,
-  "supplier_id": 466,
-  "price": 10000,
-  "consumer_service_cost": 200,
-  "supplier_service_cost": 200,
-  "status": "escalated",
+{
+  "id": 467,
   "description": "something",
-  "supplier_payout_method_id": 180,
-  "consumer_payout_method_id": 179,
-  "supplier_payout_method_type": "CreditCard",
+  "price": 10000,
+  "supplier_id": 98918,
+  "consumer_id": 98917,
+  "status": "escalated",
+  "consumer_payout_method_id": null,
+  "supplier_payout_method_id": 28198,
   "consumer_payout_method_type": "CreditCard",
-  "created_at": "2018-02-13T10:56:40+03:00",
-  "updated_at": "2018-02-14T14:46:02+03:00",
+  "supplier_payout_method_type": "CreditCard",
+  "consumer_service_cost": 500,
+  "supplier_service_cost": 500,
+  "consumer_delivery_cost": 0,
+  "supplier_delivery_cost": 0,
+  "consumer_cancellation_cost": 0,
+  "discount": 0,
+  "consumer_payment_method_type": "CreditCard",
+  "consumer_payment_method_id": null,
+  "created_at": "2019-06-17T14:35:08+03:00",
+  "updated_at": "2019-06-17T16:40:40+03:00",
   "extra": {
   }
+}
 ```
 
 Сделка переходит в статус `"escalated"`, специалисты сэйфкроу разрешают претензию, после чего сделка закрывается (status: closed) или отменяется (status: canceled)
@@ -662,7 +699,7 @@ POST /orders/32/escalate
 Переменные | Данные
 ------------ | -------------
 type | “text”, “image”
-body | ассоциативный массив  1. `“text” (JSON)` - текст вложения 2.`“file”(формат base64)` - зашифрованная картинка `“file_name”` - имя файла c расширением (.ico .jpg .png)
+body | ассоциативный массив  1. `“text” (JSON)` - текст вложения 2.`“file”(формат base64)` - зашифрованная картинка `“file_name”` - имя файла c расширением (.ico .jpg .png .pdf)
 user_id | id пользователя, от имени которого прикрепляется вложение
 
 *Пример запросов*
@@ -690,20 +727,40 @@ POST /orders/44/attachments
 }
 ```
 
+Запрос на создание .pdf вложения
+```json
+POST /orders/44/attachments
+{
+  "type": "pdf",
+  "body": {
+            "file": "AAABAAEAE...A==",
+            "file_name": "doc.pdf"
+          },
+  "user_id": 467
+}
+```
+
 *Пример ответов*
 ```json
 {
-    "id": 2,
-    "user_id": 467,
-    "type": "text",
-    "body": "{\"text\":\"there is some text\"}",
-    "send_at": "2018-02-26T11:14:15+03:00"
-  },
+  "id": 2,
+  "user_id": 467,
+  "type": "text",
+  "body": "{\"text\":\"there is some text\"}",
+  "send_at": "2018-02-26T11:14:15+03:00"
+},
 {
   "id": 3,
   "user_id": 467,
   "type": "image",
-  "body": "{\"file_path\":\"/var/www/safecrow-ng/current/static/44/New Image\",\"file_name\":\"New Image\"}",
+  "body": "{\"file_path\":\"https://dev.safecrow.ru/static/trans_attachments/44/File.png\",\"file_name\":\"File.png\"}",
+  "send_at": "2018-02-26T12:01:14+03:00"
+},
+{
+  "id": 4,
+  "user_id": 467,
+  "type": "pdf",
+  "body": "{\"file_path\":\"https://dev.safecrow.ru/static/trans_attachments/44/doc.pdf\",\"file_name\":\"doc.pdf\"}",
   "send_at": "2018-02-26T12:01:14+03:00"
 }
 ```
@@ -721,19 +778,26 @@ POST /orders/44/attachments
 
 ``` json
 {
-    "id": 2,
-    "user_id": 467,
-    "type": "text",
-    "body": "{\"text\":\"there is some text\"}",
-    "send_at": "2018-02-26T11:14:15+03:00"
-  },
+  "id": 2,
+  "user_id": 467,
+  "type": "text",
+  "body": "{\"text\":\"there is some text\"}",
+  "send_at": "2018-02-26T11:14:15+03:00"
+},
 {
-    "id": 3,
-    "user_id": 467,
-    "type": "image",
-    "body": "{\"file_path\":\"/var/www/safecrow-ng/current/static/44/New Image\",\"file_name\"      :\"New Image\"}",
-    "send_at": "2018-02-26T12:01:14+03:00"
-  }
+  "id": 3,
+  "user_id": 467,
+  "type": "image",
+  "body": "{\"file_path\":\"https://dev.safecrow.ru/static/trans_attachments/44/File.png\",\"file_name\"      :\"File.png\"}",
+  "send_at": "2018-02-26T12:01:14+03:00"
+},
+{
+  "id": 4,
+  "user_id": 467,
+  "type": "pdf",
+  "body": "{\"file_path\":\"https://dev.safecrow.ru/static/trans_attachments/44/doc.pdf\",\"file_name\":\"doc.pdf\"}",
+  "send_at": "2018-02-26T12:01:14+03:00"
+}
 ```
 
 ## <a name="settings">Настройки</a>
