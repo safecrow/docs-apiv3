@@ -651,11 +651,11 @@ GET /users/467/accounts
 ```json
 [
   {
-    "id": 179,
-    "card_holder": "CARD HOLDER",
-    "card_number": "492950XXXXXX6878",
-    "expires": "10/20",
-    "bound_at": "2018-02-06T16:46:22+03:00",
+    "id": 456,
+    "account": "XXXXXXXXXXXXXXXXXXXX",
+    "corr_account": "XXXXXXXXXXXXXXXXXXXX",
+    "bik": "XXXXXXXX",
+    "bank_name": "АО СБЕРБАНК"
   }
 ]
 ```
