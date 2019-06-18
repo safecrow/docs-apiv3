@@ -536,13 +536,15 @@ GET /users/467/cards
 
 *Пример ответа*
 ```json
-{
-  "id": 179,
-  "card_holder": "CARD HOLDER",
-  "card_number": "492950XXXXXX6878",
-  "expires": "10/20",
-  "bound_at": "2018-02-06T16:46:22+03:00",
-}
+[
+  {
+    "id": 179,
+    "card_holder": "CARD HOLDER",
+    "card_number": "492950XXXXXX6878",
+    "expires": "10/20",
+    "bound_at": "2018-02-06T16:46:22+03:00",
+  }
+]
 ```
 Если карта не была привязана - в ответ придет пустой список.
 
@@ -599,6 +601,7 @@ POST /users/466/cards/123/delete
 *Пример ответа*
 ```json
   {
+    "id": 467,
     "result": "deleted"
   }
 ```
