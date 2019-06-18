@@ -355,6 +355,7 @@ POST /orders
   }
 }
 ```
+**Примечание**: для юр. лиц в ответе поля *_payment_method_type и *_payout_method_type будут иметь значение `BankAccount`
 
 Была создана сделка 29, стоимость сделки 100 рублей, комиссия составляет 4 рубля и  платится пользователями пополам. В этот момент статус сделки становится `“pending”`.
 #### Сообщения об ошибках:
@@ -602,6 +603,118 @@ POST /users/466/cards/123/delete
 ```json
   {
     "id": 467,
+    "result": "deleted"
+  }
+```
+
+## <a name="user-bank-accout">Привязать банковский счет к пользователю (для юр.лиц)</a>
+
+Для привязки счета используйте запрос - `POST /users/:user_id/accounts`
+
+
+Переменные | Данные
+------------ | -------------
+redirect_url | ссылка (String)
+
+*Пример запроса*
+```json
+ POST /users/467/accounts
+  {
+    "account": "XXXXXXXXXXXXXXXXXXXX",
+    "corr_account": "XXXXXXXXXXXXXXXXXXXX",
+    "bik": "XXXXXXXX",
+    "bank_name": "АО СБЕРБАНК"
+  }
+```
+
+*Пример ответа*
+```json
+{
+  "id": 456,
+  "account": "XXXXXXXXXXXXXXXXXXXX",
+  "corr_account": "XXXXXXXXXXXXXXXXXXXX",
+  "bik": "XXXXXXXX",
+  "bank_name": "АО СБЕРБАНК"
+}
+```
+
+## <a name="show-user-bank-accounts">Посмотреть привязанные к пользователю банковские счета</a>
+
+Список всех привязанных счетов можно узнать, используя `GET /users/:user_id/accounts`
+
+*Пример запроса*
+```json
+GET /users/467/accounts
+```
+
+*Пример ответа*
+```json
+[
+  {
+    "id": 179,
+    "card_holder": "CARD HOLDER",
+    "card_number": "492950XXXXXX6878",
+    "expires": "10/20",
+    "bound_at": "2018-02-06T16:46:22+03:00",
+  }
+]
+```
+Если счетов не было привязано - в ответ придет пустой список.
+
+## <a name="bind-card">Привязать счет к сделке</a>
+
+Для привязки участнику сделки будет использован один из ранее привязанных к нему счетов, к запросу `POST /users/:user_id/orders/:order_id` требуется добавить `переменную id` счета – [узнать id](#show-user-bank-accounts).
+
+*Пример запроса*
+```json
+POST /users/466/orders/29
+  {
+    "account_id": 2628
+  }
+```
+
+*Пример ответа*
+```json
+{
+  "id": 37610,
+  "description": "something",
+  "price": 1000000,
+  "supplier_id": 98921,
+  "consumer_id": 98920,
+  "status": "pending",
+  "created_at": "2019-06-18T14:16:56+03:00",
+  "updated_at": "2019-06-18T14:37:21+03:00",
+  "consumer_payout_method_id": 2628,
+  "supplier_payout_method_id": null,
+  "consumer_payout_method_type": "BankAccount",
+  "supplier_payout_method_type": "BankAccount",
+  "consumer_service_cost": 50000,
+  "supplier_service_cost": 50000,
+  "consumer_delivery_cost": 0,
+  "supplier_delivery_cost": 0,
+  "consumer_cancellation_cost": 0,
+  "discount": 0,
+  "consumer_payment_method_type": "BankAccount",
+  "consumer_payment_method_id": null,
+  "extra": {
+  },
+}
+```
+Ответ - описание сделки, в полях `consumer_payout_method_id` и `type` указана информация соответственно об `id счета` и `типе выплаты`.
+
+## <a name="delete-bank-account">Удалить банковский счет</a>
+
+Для удаления счета необходимо обратиться к `/users/:user_id/accounts/:account_id/delete`
+
+*Пример запроса*
+```json
+POST /users/466/accounts/2628/delete
+```
+
+*Пример ответа*
+```json
+  {
+    "id": "2628",
     "result": "deleted"
   }
 ```
