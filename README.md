@@ -490,7 +490,19 @@ http://example.com/return/url?orderId=29_a44298&status=success&type=pay
 ```
 Cтатус сделки изменится на `paid`.
 
+## <a name="pay">Оплата сделки (для юр.лиц)</a>
 
+Для оплаты сделки в запросе указывается номер `(id)` сделки, которая будет оплачена Покупателем `(consumer)` - `POST /orders/:order_id/pay`.
+
+*Пример ответа*
+```json
+{
+    "pdf": "https://staging.safecrow.ru/static/payments/37610/order-37610.pdf",
+    "consumer_pay": 1050000
+}
+```
+
+В ответе по ссылке находится платежный документ в формате PDF.
 
 ## <a name="user-card">Привязать банковскую карточку к пользователю</a>
 
