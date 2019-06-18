@@ -38,8 +38,8 @@
 22. [Отменить сделку](#canceled)
 23. [Закрыть сделку](#close)
 24. [Эскалировать сделку/открыть претензию](#escalate)
-25. [Добавить вложение (Attaches)](#add-attaches)
-26. [Просмотреть вложения](#show-attaches)
+25. [Добавить вложение (Attachments)](#add-attachments)
+26. [Просмотреть вложения](#show-attachments)
 27. [Настройки](#settings)
 28. [Другие ошибки](#errors)
 ### Дополнительные возможности
@@ -885,7 +885,7 @@ POST /orders/32/escalate
 Сделка переходит в статус `"escalated"`, специалисты сэйфкроу разрешают претензию, после чего сделка закрывается (status: closed) или отменяется (status: canceled)
 
 
-## <a name="add-attaches">Добавить вложение (Attaches)</a>
+## <a name="add-attachments">Добавить вложение (Attachments)</a>
 Для добавления вложений используется `POST /orders/:order_id/attachments`, а также переменные:
 
 Переменные | Данные
@@ -957,7 +957,7 @@ POST /orders/44/attachments
 }
 ```
 
-## <a name="show-attaches">Просмотреть вложения</a>
+## <a name="show-attachments">Просмотреть вложения</a>
 Для просмотра всех вложений конкретной сделки `GET /orders/:order_id/attachments`
 
 *Пример запроса*
