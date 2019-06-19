@@ -372,21 +372,32 @@ GET /users/467/orders
 
 *Пример ответа*
 ```json
-{
-  "id": 29,
-  "consumer_id": 467,
-  "supplier_id": 466,
-  "price": 10000,
-  "consumer_service_cost": 200,
-  "supplier_service_cost": 200,
-  "status": "pending",
-  "description": "someting",
-  "supplier_payout_method_id": null,
-  "supplier_payout_method_type": null,
-  "created_at": "2018-02-07T18:32:17+03:00",
-  "updated_at": "2018-02-07T18:32:17+03:00",
-  "extra": {
-  }}
+[
+  {
+      "id": 30,
+      "description": "something",
+      "price": 10000,
+      "supplier_id": 467,
+      "consumer_id": 466,
+      "status": "preauthorized",
+      "consumer_payout_method_id": null,
+      "supplier_payout_method_id": 28198,
+      "consumer_payout_method_type": "CreditCard",
+      "supplier_payout_method_type": "CreditCard",
+      "consumer_service_cost": 500,
+      "supplier_service_cost": 500,
+      "consumer_delivery_cost": 0,
+      "supplier_delivery_cost": 0,
+      "consumer_cancellation_cost": 0,
+      "discount": 0,
+      "consumer_payment_method_type": "CreditCard",
+      "consumer_payment_method_id": null,
+      "created_at": "2019-06-17T14:35:08+03:00",
+      "updated_at": "2019-06-17T16:40:40+03:00",
+      "extra": {
+      }
+  }
+]
 ```
 В ответ на запрос придет список всех сделок, в которых участвовал пользователь.
 В данном примере к пользователю привязана одна сделка.
@@ -413,23 +424,29 @@ POST /orders/31/annul
 *Пример ответа*
 ```json
 {
-  "id": 31,
-  "consumer_id": 467,
-  "supplier_id": 466,
-  "price": 10000,
-  "consumer_service_cost": 200,
-  "supplier_service_cost": 200,
-  "status": "annulled",
-  "description": "someting",
-  "supplier_payout_method_id": null,
-  "consumer_payout_method_id": null,
-  "supplier_payout_method_type": null,
-  "consumer_payout_method_type": null,
-  "created_at": "2018-02-08T12:01:35+03:00",
-  "updated_at": "2018-03-06T12:22:00+03:00",
-  "extra": {
+      "id": 30,
+      "description": "something",
+      "price": 10000,
+      "supplier_id": 467,
+      "consumer_id": 466,
+      "status": "annulled",
+      "consumer_payout_method_id": null,
+      "supplier_payout_method_id": 28198,
+      "consumer_payout_method_type": "CreditCard",
+      "supplier_payout_method_type": "CreditCard",
+      "consumer_service_cost": 500,
+      "supplier_service_cost": 500,
+      "consumer_delivery_cost": 0,
+      "supplier_delivery_cost": 0,
+      "consumer_cancellation_cost": 0,
+      "discount": 0,
+      "consumer_payment_method_type": "CreditCard",
+      "consumer_payment_method_id": null,
+      "created_at": "2019-06-17T14:35:08+03:00",
+      "updated_at": "2019-06-17T16:40:40+03:00",
+      "extra": {
+      }
   }
-}
 ```
 ## <a name="pay">Оплата сделки</a>
 
@@ -1087,22 +1104,30 @@ POST /orders/:order_id/preauth/confirm
 *Пример ответа:*
 
 ```
-"id": 30,
- "consumer_id": 467,
- "supplier_id": 466,
- "price": 10000,
- "consumer_service_cost": 200,
- "supplier_service_cost": 200,
- "status": "preauthorized",
- "description": "something",
- "supplier_payout_method_id": 180,
- "consumer_payout_method_id": null,
- "supplier_payout_method_type": "CreditCard",
- "consumer_payout_method_type": null,
- "created_at": "2018-02-07T19:52:08+03:00",
- "updated_at": "2018-02-14T14:24:14+03:00",
- "extra": {
- }
+{
+    "id": 30,
+    "description": "something",
+    "price": 10000,
+    "supplier_id": 98918,
+    "consumer_id": 98917,
+    "status": "preauthorized",
+    "consumer_payout_method_id": null,
+    "supplier_payout_method_id": 28198,
+    "consumer_payout_method_type": "CreditCard",
+    "supplier_payout_method_type": "CreditCard",
+    "consumer_service_cost": 500,
+    "supplier_service_cost": 500,
+    "consumer_delivery_cost": 0,
+    "supplier_delivery_cost": 0,
+    "consumer_cancellation_cost": 0,
+    "discount": 0,
+    "consumer_payment_method_type": "CreditCard",
+    "consumer_payment_method_id": null,
+    "created_at": "2019-06-17T14:35:08+03:00",
+    "updated_at": "2019-06-17T16:40:40+03:00",
+    "extra": {
+    }
+}
 ```
 
 Если сделка не была подтверждена - необходимо произвести отмену преавторизации. Статус сделки при этом меняется на `pending`.
@@ -1119,20 +1144,28 @@ POST /orders/:order_id/preauth/release
 *Пример ответа*
 
 ```
-"id": 30,
- "consumer_id": 467,
- "supplier_id": 466,
- "price": 10000,
- "consumer_service_cost": 200,
- "supplier_service_cost": 200,
- "status": "pending",
- "description": "something",
- "supplier_payout_method_id": 180,
- "consumer_payout_method_id": null,
- "supplier_payout_method_type": "CreditCard",
- "consumer_payout_method_type": null,
- "created_at": "2018-02-07T19:52:08+03:00",
- "updated_at": "2018-02-14T14:24:14+03:00",
- "extra": {
- }
+{
+    "id": 30,
+    "description": "something",
+    "price": 10000,
+    "supplier_id": 98918,
+    "consumer_id": 98917,
+    "status": "pending",
+    "consumer_payout_method_id": null,
+    "supplier_payout_method_id": 28198,
+    "consumer_payout_method_type": "CreditCard",
+    "supplier_payout_method_type": "CreditCard",
+    "consumer_service_cost": 500,
+    "supplier_service_cost": 500,
+    "consumer_delivery_cost": 0,
+    "supplier_delivery_cost": 0,
+    "consumer_cancellation_cost": 0,
+    "discount": 0,
+    "consumer_payment_method_type": "CreditCard",
+    "consumer_payment_method_id": null,
+    "created_at": "2019-06-17T14:35:08+03:00",
+    "updated_at": "2019-06-17T16:40:40+03:00",
+    "extra": {
+    }
+}
  ```
