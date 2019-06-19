@@ -477,8 +477,7 @@ POST /orders/29/pay
 *Пример ответа*
 ```json
 {
-  "payment_url":"https://dev.safecrow.ru/finances/29/pay?jsOperationId=3e1ba729e68445c4a37
-    062c556385&return_to=",
+  "payment_url": "https://secure.mandarinpay.com/f/rcl1/?operationId=transaction_e0db10aecacc44ea9fbc1dd335a94a70&locale=en",
   "consumer_pay": 102000
 }
 ```
