@@ -1,6 +1,6 @@
 [![SafeCrow](safecrow.svg)](https://www.safecrow.ru/)
 # Документация API SafeCrow V3
-##### версия документа 3.08
+##### версия документа 3.09
 ### Версии документа
 
 Версия | Дата | Предмет изменений
@@ -13,6 +13,7 @@
 3.06 | 26-02-2019 | Добавлена информация поиска пользователя по номеру телефона.
 3.07 | 18-06-2019 | Добавлена информация по работе с юридическими лицами.
 3.08 | 26-06-2019 | Добавлена информация по отправке уведомлений при работе с юридическими лицами.
+3.09 | 24-07-2019 | Добавлена информация по работе с нерезедентами РФ.
 
 ## Оглавление
 1. [Введение](#intro)
@@ -34,21 +35,26 @@
 16. [Привязать карту к сделке](#bind-card)
 17. [Удалить карту](#delete-card)
 18. [Привязать банковский счет к пользователю (для юр.лиц)](#user-bank-account)
-19. [Посмотреть привязанные к пользователю банковские счета](#show-user-bank-accounts)
-20. [Привязать счет к сделке](#bind-bank-account)
-21. [Удалить банковский счет](#delete-bank-account)
-22. [Отменить сделку](#canceled)
+19. [Привязать банковский счет в банке-респонденте к счету в банке-корреспонденте (или наоборот)](#respondent-correspondent)
+20. [Посмотреть привязанные к пользователю банковские счета](#show-user-bank-accounts)
+21. [Посмотреть список счетов респондентов/корреспондентов](#show-respondent-correspondent)
+22. [Привязать счет к сделке](#bind-bank-account)
+23. [Удалить банковский счет](#delete-bank-account)
+24. [Отменить сделку](#canceled)
     1. [Отменить сделку (callback для юр.лиц)](#cancel_bus)
-23. [Закрыть сделку](#close)
+25. [Закрыть сделку](#close)
     1. [Закрыть сделку (для юр.лиц)](#close_bus)
-24. [Эскалировать сделку/открыть претензию](#escalate)
-25. [Добавить вложение (Attachments)](#add-attachments)
-26. [Просмотреть вложения](#show-attachments)
-27. [Настройки](#settings)
-28. [Другие ошибки](#errors)
+26. [Эскалировать сделку/открыть претензию](#escalate)
+27. [Добавить вложение (Attachments)](#add-attachments)
+28. [Просмотреть вложения](#show-attachments)
+29. [Подтверждение получения товара (для юр.лиц)](#confirm-receive)
+30. [Отправка закрывающих документов (для юр.лиц)](#send-docs)
+31. [Настройки](#settings)
+32. [Другие ошибки](#errors)
 ### Дополнительные возможности
 1. [Эквайринг за доставку](#acquiring)
 2. [Преавторизация платежей](#preauth)
+
 
 ## <a name="intro">Введение</a>
 **API SafeCrow V3** – это набор инструментов, которые позволяют использовать сервис и технологии SafeCrow в ваших проектах.
@@ -75,29 +81,29 @@
 ![step-deal](step-deal.jpg)
   Рис.1
 
-## <a name="authorization">Авторизация</a>
 
+## <a name="authorization">Авторизация</a>
 В API V3 авторизация сделана прозрачной, в основе нее `http basic auth` и `hmac подписи`.
 
 В качестве логина надо использовать `api-key`, в качестве пароля `hmac подпись` тела запроса ключом `api-secret`.
 
 Пример запроса на Python, PHP и Ruby содежатся  в репозитории.
 
-## <a name="reg">Регистрация (создание) пользователя</a>
 
+## <a name="reg">Регистрация (создание) пользователя</a>
 Для создания/регистрации пользователя следует использовать запрос `POST /users` и указать следующие переменные:
 
 | Переменные |     Данные    | Примечание
 ------------ | ------------- | ----------
-**Обязательные** | |
+| **Обязательные**
 | name | Имя Фамилия
 | phone | Номер мобильного телефона | Можно не указывать, если указан email
 | email | e-mail пользователя | Можно не указывать, если указан телефон
 | inn | ИНН | Только для юр. лиц
-| ogrn | ОГРН | Только для юр. лиц
+| ogrn | ОГРН | Только для юр. лиц резидентов РФ
 | legal_address | Юр. адрес | Только для юр. лиц
 | physical_address | Физ. адрес | Только для юр. лиц
-**Опциональные** | |
+| **Опциональные**
 | business | Юр. лицо? | true \|\| [false]
 | kpp | КПП | Только для юр. лиц
 | ceo_name | ФИО руководителя | Только для юр. лиц
@@ -105,6 +111,7 @@
 | warrant | Основание для действия | Только для юр. лиц
 | contact_name | ФИО контактного лица | Только для юр. лиц
 | contact_position | Должность контактного лица | Только для юр. лиц
+| origin | Страна, [формат ISO 3166-2](https://ru.wikipedia.org/wiki/ISO_3166-2) | Только для юр. лиц, если не указано = 'RU'
 
 *Пример запроса*
 
@@ -143,7 +150,8 @@ POST /users
   "email": "ivan@example.com",
   "phone": "79998887777",
   "name": "Иван Иванов",
-  "registered_at": "2018-02-05T12:17:01+03:00"
+  "registered_at": "2018-02-05T12:17:01+03:00",
+  "origin": "RU"
 }
 ```
 
@@ -160,29 +168,26 @@ POST /users
     "legal_address": "г.Москва, ул. Международная, д.1",
     "physical_address": "г.Москва, ул. Международная, д.1"
   },
-  "registered_at": "2018-02-05T12:17:01+03:00"
+  "registered_at": "2018-02-05T12:17:01+03:00",
+  "origin": "RU"
 }
 ```
-Создан пользователь 467,  5 февраля 2018 в 12:17
+Создан пользователь 467, 5 февраля 2018 в 12:17
 
 #### Сообщения об ошибках:
 *Пример*
 ```json
 {
   "errors": [
-    {
-      "name": "required field"
-    },
-    {
-      "email": "user with email ivan@example.com and/or phone 79251234567 already exists"
-    }
+    { "name": "required field" },
+    { "email": "user with email ivan@example.com and/or phone 79251234567 already exists" }
   ]
 }
 ```
 **`“required field”`** - ошибка в обязательном поле. Поле либо не было передано, либо содержит ошибку.
 
-## <a name="user-list">Посмотреть список пользователей</a>
 
+## <a name="user-list">Посмотреть список пользователей</a>
 Для просмотра зарегистрированных пользователей достаточно ввести следующий запрос:
 
 *Пример запроса*
@@ -206,17 +211,17 @@ GET /users?phone=79998887777
 *Пример ответа*
 ```json
 {
-    "id": 467,
-    "email": "test@email.com",
-    "phone": "79998887777",
-    "name": "Вася Васильев",
-    "registered_at": "2018-02-05T12:17:01+03:00"
-
- }
+  "id": 467,
+  "email": "test@email.com",
+  "phone": "79998887777",
+  "name": "Вася Васильев",
+  "registered_at": "2018-02-05T12:17:01+03:00",
+  "origin": "RU"
+}
 ```
 
-## <a name="user-info">Посмотреть данные пользователя</a>
 
+## <a name="user-info">Посмотреть данные пользователя</a>
 Для просмотра данных пользователя, используйте запрос: `GET /users/:user_id`
 
 *Пример запроса*
@@ -231,9 +236,11 @@ GET /users/467
   "email": "test@email.com",
   "phone": "79998887777",
   "name": "Вася Васильев",
-  "registered_at": "2018-02-05T12:17:01+03:00"
+  "registered_at": "2018-02-05T12:17:01+03:00",
+  "origin": "RU"
 }
 ```
+
 
 ## <a name="user-edit">Редактировать данные пользователя</a>
 Редактировать и добавить данные пользователю можно используя запрос `POST /users/:user_id`. Можно изменить следующие переменные:
@@ -248,6 +255,7 @@ phone | номер мобильного телефона
 *Пример запроса*
 ```json
 POST /users/467
+
 {
   "phone": "79998887777",
   "name": "Иван Васильев"
@@ -261,7 +269,8 @@ POST /users/467
   "email": "test@email.com",
   "phone": "79998887777",
   "name": "Иван Васильев",
-  "registered_at": "2018-02-05T12:17:01+03:00"
+  "registered_at": "2018-02-05T12:17:01+03:00",
+  "origin": "RU"
 }
 ```
 
@@ -270,6 +279,7 @@ POST /users/467
 *Пример запроса для юр.лица*
 ```json
 POST /users/467
+
 {
   "name": "Иван Васильев",
   "inn": "3664069397"
@@ -279,17 +289,18 @@ POST /users/467
 *Пример ответа для юр.лица*
 ```json
 {
-    "id": 468,
-    "email": "test@email.com",
-    "phone": "79998887777",
-    "name": "Иван Васильев",
-    "registered_at": "2018-02-05T12:17:01+03:00",
-    "props": {
-        "inn": "3664069397",
-        "ogrn": "1234215145134",
-        "legal_address": "Moscow",
-        "physical_address": "Moscow"
-    }
+  "id": 468,
+  "email": "test@email.com",
+  "phone": "79998887777",
+  "name": "Иван Васильев",
+  "registered_at": "2018-02-05T12:17:01+03:00",
+  "props": {
+    "inn": "3664069397",
+    "ogrn": "1234215145134",
+    "legal_address": "Moscow",
+    "physical_address": "Moscow"
+  },
+  "origin": "RU"
 }
 ```
 У пользователя 468 был изменен ИНН.
@@ -297,9 +308,7 @@ POST /users/467
 **Примечание**: нельзя обновить заполненное поле на пустое.
 
 
-
 ## <a name="calculate">Расчет стоимости комиссии SafeCrow</a>
-
 Для расчета стоимости комиссии SafeCrow используйте `POST /calculate`.
 
 Поле `consumer_cancellation_cost` входит в разряд дополнительных возможностей и требует отдельного договора. Данное поле предоставляет возможность оштрафовать Покупателя за отмену, по вашему желанию. Например, если товар уже ушел от Продавца Покупателю, оштрафовать Покупателя на стоимость обратной доставки.
@@ -315,22 +324,24 @@ consumer_cancellation_cost | штраф покупателя за отмену. 
 
 ```json
 POST /calculate
+
 {
-   "price":100000,
-   "service_cost_payer":"50/50",
-   "consumer_cancellation_cost": 0
+  "price":100000,
+  "service_cost_payer":"50/50",
+  "consumer_cancellation_cost": 0
 }
 ```
 
 *Пример ответа*
 ```json
 {
-   "price":100000,
-   "supplier_service_cost":2000,
-   "consumer_service_cost":2000,
-   "consumer_cancellation_cost": 0
+  "price":100000,
+  "supplier_service_cost":2000,
+  "consumer_service_cost":2000,
+  "consumer_cancellation_cost": 0
 }
 ```
+
 
 ## <a name="create">Создание сделки</a>
 Для создания сделки следует использовать `POST /orders` и указать следующие переменные:
@@ -349,6 +360,7 @@ POST /calculate
 *Пример запроса*
 ```json
 POST /orders
+
 {
   "consumer_id": 467,
   "supplier_id": 466,
@@ -381,6 +393,12 @@ POST /orders
   "consumer_payment_method_id": null,
   "created_at": "2019-06-17T14:35:08+03:00",
   "updated_at": "2019-06-17T14:35:08+03:00",
+  "foreign_supplier_payout_method_id": null,
+  "foreign_consumer_payout_method_id": null,
+  "foreign_supplier_payout_method_type": null,
+  "foreign_consumer_payout_method_type": null,
+  "foreign_consumer_payment_method_type": null,
+  "foreign_consumer_payment_method_id": null,
   "extra": {
   }
 }
@@ -393,7 +411,6 @@ POST /orders
 
 
 ## <a name="show-deal">Просмотр сделок</a>
-
 Посмотреть данные **всех сделок** - `GET /orders`
 
 Посмотреть **сделку по id** - `GET /orders/:order_id`
@@ -409,36 +426,42 @@ GET /users/467/orders
 ```json
 [
   {
-      "id": 30,
-      "description": "something",
-      "price": 10000,
-      "supplier_id": 467,
-      "consumer_id": 466,
-      "status": "preauthorized",
-      "consumer_payout_method_id": null,
-      "supplier_payout_method_id": 28198,
-      "consumer_payout_method_type": "CreditCard",
-      "supplier_payout_method_type": "CreditCard",
-      "consumer_service_cost": 500,
-      "supplier_service_cost": 500,
-      "consumer_delivery_cost": 0,
-      "supplier_delivery_cost": 0,
-      "consumer_cancellation_cost": 0,
-      "discount": 0,
-      "consumer_payment_method_type": "CreditCard",
-      "consumer_payment_method_id": null,
-      "created_at": "2019-06-17T14:35:08+03:00",
-      "updated_at": "2019-06-17T16:40:40+03:00",
-      "extra": {
-      }
+    "id": 30,
+    "description": "something",
+    "price": 10000,
+    "supplier_id": 467,
+    "consumer_id": 466,
+    "status": "preauthorized",
+    "consumer_payout_method_id": null,
+    "supplier_payout_method_id": 28198,
+    "consumer_payout_method_type": "CreditCard",
+    "supplier_payout_method_type": "CreditCard",
+    "consumer_service_cost": 500,
+    "supplier_service_cost": 500,
+    "consumer_delivery_cost": 0,
+    "supplier_delivery_cost": 0,
+    "consumer_cancellation_cost": 0,
+    "discount": 0,
+    "consumer_payment_method_type": "CreditCard",
+    "consumer_payment_method_id": null,
+    "created_at": "2019-06-17T14:35:08+03:00",
+    "updated_at": "2019-06-17T16:40:40+03:00",
+    "foreign_supplier_payout_method_id": null,
+    "foreign_consumer_payout_method_id": null,
+    "foreign_supplier_payout_method_type": null,
+    "foreign_consumer_payout_method_type": null,
+    "foreign_consumer_payment_method_type": null,
+    "foreign_consumer_payment_method_id": null,
+    "extra": {
+    }
   }
 ]
 ```
 В ответ на запрос придет список всех сделок, в которых участвовал пользователь.
 В данном примере к пользователю привязана одна сделка.
 
-## <a name="deleted">Аннулирование сделки</a>
 
+## <a name="deleted">Аннулирование сделки</a>
 Аннулирование возможно только до проведения оплаты по сделке.
 
 Для аннулирования активной сделки используется запрос `POST /orders/:order_id/annul` и данные:
@@ -451,40 +474,48 @@ reason | string
 *Пример запроса*
 ```json
 POST /orders/31/annul
- {
+
+{
   "reason": "Some reason"
- }
+}
 ```
 
 *Пример ответа*
 ```json
 {
-      "id": 30,
-      "description": "something",
-      "price": 10000,
-      "supplier_id": 467,
-      "consumer_id": 466,
-      "status": "annulled",
-      "consumer_payout_method_id": null,
-      "supplier_payout_method_id": 28198,
-      "consumer_payout_method_type": "CreditCard",
-      "supplier_payout_method_type": "CreditCard",
-      "consumer_service_cost": 500,
-      "supplier_service_cost": 500,
-      "consumer_delivery_cost": 0,
-      "supplier_delivery_cost": 0,
-      "consumer_cancellation_cost": 0,
-      "discount": 0,
-      "consumer_payment_method_type": "CreditCard",
-      "consumer_payment_method_id": null,
-      "created_at": "2019-06-17T14:35:08+03:00",
-      "updated_at": "2019-06-17T16:40:40+03:00",
-      "extra": {
-      }
+  "id": 30,
+  "description": "something",
+  "price": 10000,
+  "supplier_id": 467,
+  "consumer_id": 466,
+  "status": "annulled",
+  "consumer_payout_method_id": null,
+  "supplier_payout_method_id": 28198,
+  "consumer_payout_method_type": "CreditCard",
+  "supplier_payout_method_type": "CreditCard",
+  "consumer_service_cost": 500,
+  "supplier_service_cost": 500,
+  "consumer_delivery_cost": 0,
+  "supplier_delivery_cost": 0,
+  "consumer_cancellation_cost": 0,
+  "discount": 0,
+  "consumer_payment_method_type": "CreditCard",
+  "consumer_payment_method_id": null,
+  "created_at": "2019-06-17T14:35:08+03:00",
+  "updated_at": "2019-06-17T16:40:40+03:00",
+  "foreign_supplier_payout_method_id": null,
+  "foreign_consumer_payout_method_id": null,
+  "foreign_supplier_payout_method_type": null,
+  "foreign_consumer_payout_method_type": null,
+  "foreign_consumer_payment_method_type": null,
+  "foreign_consumer_payment_method_id": null,
+  "extra": {
   }
+}
 ```
-## <a name="pay">Оплата сделки</a>
 
+
+## <a name="pay">Оплата сделки</a>
 Для оплаты сделки в запросе указывается номер `(id)` сделки, которая будет оплачена Покупателем `(consumer)` - `POST /orders/:order_id/pay`.
 Также необходимым полем является переменная `redirect_url` - ссылка на страницу, куда будет направлен пользователь после оплаты.
 
@@ -510,9 +541,10 @@ CVV | 123 |
 *Пример запроса*
 ```json
 POST /orders/29/pay
-  {
-    "redirect_url": "http://example.com/return/url"
-  }
+
+{
+  "redirect_url": "http://example.com/return/url"
+}
 ```
 
 *Пример ответа*
@@ -536,15 +568,15 @@ http://example.com/return/url?orderId=29_a44298&status=success&type=pay
 ```
 Cтатус сделки изменится на `paid`.
 
-## <a name="pay-business">Оплата сделки (для юр.лиц)</a>
 
+## <a name="pay-business">Оплата сделки (для юр.лиц)</a>
 Для оплаты сделки в запросе указывается номер `(id)` сделки, которая будет оплачена Покупателем `(consumer)` - `POST /orders/:order_id/pay`.
 
 *Пример ответа*
 ```json
 {
-    "pdf": "https://staging.safecrow.ru/static/payments/37610/order-37610.pdf",
-    "consumer_pay": 1050000
+  "pdf": "https://staging.safecrow.ru/static/payments/37610/order-37610.pdf",
+  "consumer_pay": 1050000
 }
 ```
 
@@ -563,8 +595,8 @@ Cтатус сделки изменится на `paid`.
 }
 ```
 
-## <a name="user-card">Привязать банковскую карточку к пользователю</a>
 
+## <a name="user-card">Привязать банковскую карточку к пользователю</a>
 Для привязки карты используйте запрос - `POST /users/:user_id/cards`
 
 
@@ -574,10 +606,11 @@ redirect_url | ссылка (String)
 
 *Пример запроса*
 ```json
- POST /users/467/cards
-  {
-    "redirect_url": "http://example.com/return/url"
-  }
+POST /users/467/cards
+
+{
+  "redirect_url": "http://example.com/return/url"
+}
 ```
 
 *Пример ответа*
@@ -594,9 +627,7 @@ redirect_url | ссылка (String)
 **`"phone": [ "Can not be empty!" ]`** - к пользователю должен быть привязан телефонный номер ([привязать](#user-edit), изменив данные пользователя)
 
 
-
 ## <a name="show-user-cards">Посмотреть привязанные к пользователю карты</a>
-
 После заполнения данных карты, она привязывается к пользователю, список всех привязанных  карт, включая неудачные попытки можно узнать, используя `GET /users/:user_id/cards?all=true`
 
 Для просмотра всех банковских карт, подтвержденных мандарином `GET /users/:user_id/cards`
@@ -620,16 +651,17 @@ GET /users/467/cards
 ```
 Если карта не была привязана - в ответ придет пустой список.
 
-## <a name="bind-card">Привязать карту к сделке</a>
 
+## <a name="bind-card">Привязать карту к сделке</a>
 Для выплаты продавцу `(supplier)` будет использована одна из ранее привязанных к нему карт, к запросу `POST /users/:user_id/orders/:order_id` требуется добавить `переменную id` карты – [узнать id](#show-user-cards).
 
 *Пример запроса*
 ```json
 POST /users/466/orders/29
-  {
-    "supplier_payout_card_id": 467
-  }
+
+{
+  "supplier_payout_card_id": 467
+}
 ```
 
 *Пример ответа*
@@ -655,14 +687,20 @@ POST /users/466/orders/29
   "consumer_payment_method_id": null,
   "created_at": "2019-06-17T14:35:08+03:00",
   "updated_at": "2019-06-17T16:40:40+03:00",
+  "foreign_supplier_payout_method_id": null,
+  "foreign_consumer_payout_method_id": null,
+  "foreign_supplier_payout_method_type": null,
+  "foreign_consumer_payout_method_type": null,
+  "foreign_consumer_payment_method_type": null,
+  "foreign_consumer_payment_method_id": null,
   "extra": {
   }
 }
 ```
 Ответ - описание сделки, в полях `supplier_payout_method_id` и `type` указана информация соответственно об `id карты` и `типе выплаты`.
 
-## <a name="delete-card">Удалить карту</a>
 
+## <a name="delete-card">Удалить карту</a>
 Для удаления карты необходимо обратиться к `/users/:user_id/cards/:card_id/delete`
 
 *Пример запроса*
@@ -672,33 +710,35 @@ POST /users/466/cards/123/delete
 
 *Пример ответа*
 ```json
-  {
-    "id": 467,
-    "result": "deleted"
-  }
+{
+  "id": 467,
+  "result": "deleted"
+}
 ```
 
-## <a name="user-bank-account">Привязать банковский счет к пользователю (для юр.лиц)</a>
 
+## <a name="user-bank-account">Привязать банковский счет к пользователю (для юр.лиц)</a>
 Для привязки счета используйте запрос - `POST /users/:user_id/accounts`
 
 
-Переменные | Данные
------------- | -------------
-account | Р/С
+Переменные | Данные | Примечание
+-|-|-
+account | Р/С | необязательно для счета банка корреспондента
 corr_account | К/С
 bik | БИК
 bank_name | Название банка
+origin | Страна, [формат ISO 3166-2](https://ru.wikipedia.org/wiki/ISO_3166-2) | если не указано = 'RU'
 
 *Пример запроса*
 ```json
- POST /users/467/accounts
-  {
-    "account": "XXXXXXXXXXXXXXXXXXXX",
-    "corr_account": "XXXXXXXXXXXXXXXXXXXX",
-    "bik": "XXXXXXXX",
-    "bank_name": "АО СБЕРБАНК"
-  }
+POST /users/467/accounts
+
+{
+  "account": "XXXXXXXXXXXXXXXXXXXX",
+  "corr_account": "XXXXXXXXXXXXXXXXXXXX",
+  "bik": "XXXXXXXX",
+  "bank_name": "АО СБЕРБАНК"
+}
 ```
 
 *Пример ответа*
@@ -708,13 +748,72 @@ bank_name | Название банка
   "account": "XXXXXXXXXXXXXXXXXXXX",
   "corr_account": "XXXXXXXXXXXXXXXXXXXX",
   "bik": "XXXXXXXX",
-  "bank_name": "АО СБЕРБАНК"
+  "bank_name": "АО СБЕРБАНК",
+  "origin": "RU"
 }
 ```
-**Примечание**: Номера счетов проверяются на правильность формирование по БИК
+**Примечание**: Номера счетов банков РФ проверяются на правильность формирование по БИК
+
+
+## <a name="respondent-correspondent">Привязать банковский счет в банке-респонденте к счету в банке-корреспонденте (или наоборот)</a>
+Для привязки используйте запрос - `POST /users/:user_id/accounts/account_id`
+
+Переменные | Данные
+-|-
+relation | Роль банка который привязывается, 'respondent' или 'correspondent'
+account_id | ID счета который привязывается
+
+*Пример запроса*
+```json
+POST /users/467/accounts/123
+
+{
+  "relation": "respondent",
+  "account_id": 122
+}
+```
+
+*Пример ответа*
+```json
+{
+  "id": 122,
+  "account": "XXXXXXXXXXXXXXXXXXXX",
+  "corr_account": "XXXXXXXXXXXXXXXXXXXX",
+  "bik": "XXXXXXXX",
+  "bank_name": "Нурбанк",
+  "origin": "KZ"
+}
+```
+
+К корреспонденту (id = 123) привязывается респондент (id = 122)
+
+
+## <a name="show-respondent-correspondent">Посмотреть список счетов респондентов/корреспондентов</a>
+Для **респондентов** `GET /users/:user_id/accounts/:account_id/respondents`
+
+Для **корреспондентов** `GET /users/:user_id/accounts/:account_id/correspondents`
+
+*Пример запроса*
+```json
+GET /users/467/accounts/122/correspondents
+```
+
+*Пример ответа*
+```json
+[
+  {
+    "id": 123,
+    "account": "XXXXXXXXXXXXXXXXXXXX",
+    "corr_account": "XXXXXXXXXXXXXXXXXXXX",
+    "bik": "XXXXXXXX",
+    "bank_name": "АО СБЕРБАНК",
+    "origin": "RU"
+  }
+]
+```
+
 
 ## <a name="show-user-bank-accounts">Посмотреть привязанные к пользователю банковские счета</a>
-
 Список всех привязанных счетов можно узнать, используя `GET /users/:user_id/accounts`
 
 *Пример запроса*
@@ -730,22 +829,24 @@ GET /users/467/accounts
     "account": "XXXXXXXXXXXXXXXXXXXX",
     "corr_account": "XXXXXXXXXXXXXXXXXXXX",
     "bik": "XXXXXXXX",
-    "bank_name": "АО СБЕРБАНК"
+    "bank_name": "АО СБЕРБАНК",
+    "origin": "RU"
   }
 ]
 ```
 Если счетов не было привязано - в ответ придет пустой список.
 
-## <a name="bind-bank-account">Привязать счет к сделке</a>
 
+## <a name="bind-bank-account">Привязать счет к сделке</a>
 Для привязки участнику сделки будет использован один из ранее привязанных к нему счетов, к запросу `POST /users/:user_id/orders/:order_id` требуется добавить `переменную id` счета – [узнать id](#show-user-bank-accounts).
 
 *Пример запроса*
 ```json
 POST /users/466/orders/29
-  {
-    "account_id": 2628
-  }
+
+{
+  "account_id": 2628
+}
 ```
 
 *Пример ответа*
@@ -771,14 +872,55 @@ POST /users/466/orders/29
   "discount": 0,
   "consumer_payment_method_type": "BankAccount",
   "consumer_payment_method_id": null,
+  "foreign_supplier_payout_method_id": null,
+  "foreign_consumer_payout_method_id": null,
+  "foreign_supplier_payout_method_type": null,
+  "foreign_consumer_payout_method_type": null,
+  "foreign_consumer_payment_method_type": null,
+  "foreign_consumer_payment_method_id": null,
   "extra": {
   },
 }
 ```
 Ответ - описание сделки, в полях `consumer_payout_method_id` и `type` указана информация соответственно об `id счета` и `типе выплаты`.
 
-## <a name="delete-bank-account">Удалить банковский счет</a>
+Если счет какой-либо стороны открыт в банке-нерезиденте РФ, то данные об оплате/выплате будут в соответсвующих полях `foreign_*`.
 
+*Пример ответа, если счет продавца открыт в банке-нерезиденте РФ*
+```json
+{
+  "id": 37610,
+  "description": "something",
+  "price": 1000000,
+  "supplier_id": 98921,
+  "consumer_id": 98920,
+  "status": "pending",
+  "created_at": "2019-06-18T14:16:56+03:00",
+  "updated_at": "2019-06-18T14:37:21+03:00",
+  "consumer_payout_method_id": 2628,
+  "supplier_payout_method_id": null,
+  "consumer_payout_method_type": "BankAccount",
+  "supplier_payout_method_type": null,
+  "consumer_service_cost": 50000,
+  "supplier_service_cost": 50000,
+  "consumer_delivery_cost": 0,
+  "supplier_delivery_cost": 0,
+  "consumer_cancellation_cost": 0,
+  "discount": 0,
+  "consumer_payment_method_type": "BankAccount",
+  "consumer_payment_method_id": null,
+  "foreign_supplier_payout_method_id": 3739,
+  "foreign_consumer_payout_method_id": null,
+  "foreign_supplier_payout_method_type": "BankAccount",
+  "foreign_consumer_payout_method_type": null,
+  "foreign_consumer_payment_method_type": null,
+  "foreign_consumer_payment_method_id": null,
+  "extra": {
+  },
+}
+```
+
+## <a name="delete-bank-account">Удалить банковский счет</a>
 Для удаления счета необходимо обратиться к `/users/:user_id/accounts/:account_id/delete`
 
 *Пример запроса*
@@ -788,14 +930,14 @@ POST /users/466/accounts/2628/delete
 
 *Пример ответа*
 ```json
-  {
-    "id": "2628",
-    "result": "deleted"
-  }
+{
+  "id": "2628",
+  "result": "deleted"
+}
 ```
 
-## <a name="canceled">Отменить сделку</a>
 
+## <a name="canceled">Отменить сделку</a>
 Отмена производится в том случае, если оплата по сделке уже прошла, в ином случае производится Аннулирование сделки.
 Обратите внимание, что при отмене сделки вся комиссия сервиса списывается с покупателя `(consumer)`.
 
@@ -809,8 +951,9 @@ reason | String
 *Пример запроса*
 ```json
 POST /orders/51/cancel
+
 {
- "reason": "Some important reason"
+  "reason": "Some important reason"
 }
 ```
 
@@ -838,6 +981,12 @@ POST /orders/51/cancel
   "consumer_payment_method_id": null,
   "created_at": "2019-06-17T14:35:08+03:00",
   "updated_at": "2019-06-17T16:40:40+03:00",
+  "foreign_supplier_payout_method_id": null,
+  "foreign_consumer_payout_method_id": null,
+  "foreign_supplier_payout_method_type": null,
+  "foreign_consumer_payout_method_type": null,
+  "foreign_consumer_payment_method_type": null,
+  "foreign_consumer_payment_method_id": null,
   "extra": {
   }
 }
@@ -845,26 +994,28 @@ POST /orders/51/cancel
 
 Сделка переходит в статус - отмена  `(cancelled)`. Покупателю возвращается сумма оплаты - 100 рубля.
 
+
 ### <a name="cancel_bus">Отменить сделку (callback для юр.лиц)</a>
 Партнеру по [зарегистрированному](#settings) `callback_url` уходит уведомление
-                  
+
 *Пример уведомления если сделка была в статусе paid*
-   
+
 ```json
 {
-"id": 468,
-"status": "cancelled"
+  "id": 468,
+  "status": "cancelled"
 }
 ```
 
 *Пример уведомления если сделка была в статусе pending*
-   
+
 ```json
 {
-"id": 468,
-"status": "annulled"
+  "id": 468,
+  "status": "annulled"
 }
 ```
+
 
 ## <a name="close">Закрыть сделку</a>
 Успешное завершение сделки - `POST /orders/:order_id/close`
@@ -906,6 +1057,12 @@ POST /orders/30/close
   "consumer_payment_method_id": null,
   "created_at": "2019-06-17T14:35:08+03:00",
   "updated_at": "2019-06-17T16:40:40+03:00",
+  "foreign_supplier_payout_method_id": null,
+  "foreign_consumer_payout_method_id": null,
+  "foreign_supplier_payout_method_type": null,
+  "foreign_consumer_payout_method_type": null,
+  "foreign_consumer_payment_method_type": null,
+  "foreign_consumer_payment_method_id": null,
   "extra": {
   }
 }
@@ -915,19 +1072,21 @@ POST /orders/30/close
 Сообщения об ошибках:
 "errors":[ "discount is too big" ] - выплата Продавцу менее 100 рублей
 
+
 ## <a name="close_bus">Закрыть сделку (для юр.лиц)</a>
 По факту получения выписки о платеже в сторону Исполнителя, происходит закрытие сделки на стороне Safecrow.
 
 При этом партнеру по [зарегистрированному](#settings) `callback_url` уходит уведомление
-                  
+
 *Пример уведомления*
 
 ```json
 {
-"id": 468,
-"status": "closed"
+  "id": 468,
+  "status": "closed"
 }
 ```
+
 
 ## <a name="escalate">Эскалировать сделку/открыть претензию</a>
 Если покупатель недоволен качеством товара, сделка передается специалистам SafeCrow - `POST /orders/:order_id/escalate`
@@ -941,8 +1100,9 @@ reason | string
 *Пример запроса*
 ```json
 POST /orders/32/escalate
+
 {
- "reason": "Some important reason"
+  "reason": "Some important reason"
 }
 ```
 
@@ -969,6 +1129,12 @@ POST /orders/32/escalate
   "consumer_payment_method_id": null,
   "created_at": "2019-06-17T14:35:08+03:00",
   "updated_at": "2019-06-17T16:40:40+03:00",
+  "foreign_supplier_payout_method_id": null,
+  "foreign_consumer_payout_method_id": null,
+  "foreign_supplier_payout_method_type": null,
+  "foreign_consumer_payout_method_type": null,
+  "foreign_consumer_payment_method_type": null,
+  "foreign_consumer_payment_method_id": null,
   "extra": {
   }
 }
@@ -991,6 +1157,7 @@ user_id | id пользователя, от имени которого прик
 
 ```json
 POST /orders/44/attachments
+
 {
   "type": "text",
   "body": {"text": "there is some text"},
@@ -1001,12 +1168,13 @@ POST /orders/44/attachments
 Запрос на создание .jpg .png вложения
 ```json
 POST /orders/44/attachments
+
 {
   "type": "image",
   "body": {
-            "file": "AAABAAEAE...A==",
-            "file_name": "File.png"
-          },
+    "file": "AAABAAEAE...A==",
+    "file_name": "File.png"
+  },
   "user_id": 467
 }
 ```
@@ -1014,12 +1182,13 @@ POST /orders/44/attachments
 Запрос на создание .pdf вложения
 ```json
 POST /orders/44/attachments
+
 {
   "type": "pdf",
   "body": {
-            "file": "AAABAAEAE...A==",
-            "file_name": "doc.pdf"
-          },
+    "file": "AAABAAEAE...A==",
+    "file_name": "doc.pdf"
+  },
   "user_id": 467
 }
 ```
@@ -1048,6 +1217,7 @@ POST /orders/44/attachments
   "send_at": "2018-02-26T12:01:14+03:00"
 }
 ```
+
 
 ## <a name="show-attachments">Просмотреть вложения</a>
 Для просмотра всех вложений конкретной сделки `GET /orders/:order_id/attachments`
@@ -1084,23 +1254,108 @@ POST /orders/44/attachments
 }
 ```
 
-## <a name="settings">Настройки</a>
 
+## <a name="confirm-receive">Подтверждение получения товара (для юр.лиц)</a>
+Запрос для подтверждения получения товара - `POST /orders/:id/approve`
+
+Переменные | Данные
+-|-
+status | 'approved'
+
+*Пример запроса*
+```json
+POST /orders/37610/approve
+
+{
+  "status": "approved"
+}
+```
+
+*Пример ответа*
+```json
+{
+  "id": 37610,
+  "description": "something",
+  "price": 1000000,
+  "supplier_id": 98921,
+  "consumer_id": 98920,
+  "status": "paid",
+  "created_at": "2019-06-18T14:16:56+03:00",
+  "updated_at": "2019-06-18T14:37:21+03:00",
+  "consumer_payout_method_id": 2628,
+  "supplier_payout_method_id": null,
+  "consumer_payout_method_type": "BankAccount",
+  "supplier_payout_method_type": "BankAccount",
+  "consumer_service_cost": 50000,
+  "supplier_service_cost": 50000,
+  "consumer_delivery_cost": 0,
+  "supplier_delivery_cost": 0,
+  "consumer_cancellation_cost": 0,
+  "discount": 0,
+  "consumer_payment_method_type": "BankAccount",
+  "consumer_payment_method_id": null,
+  "foreign_supplier_payout_method_id": null,
+  "foreign_consumer_payout_method_id": null,
+  "foreign_supplier_payout_method_type": null,
+  "foreign_consumer_payout_method_type": null,
+  "foreign_consumer_payment_method_type": null,
+  "foreign_consumer_payment_method_id": null,
+  "extra": {
+  },
+}
+```
+
+**Примечание**: Статус сделки в ответе должен быть paid - `"status": "paid"`.
+
+
+## <a name="send-docs">Отправка закрывающих документов (для юр.лиц)</a>
+Для выплаты продавцу, к сделке должны быть приложены закрывающие документы в формате base64
+`POST /orders/:id/closing_docs`
+
+Переменные | Данные
+-|-
+deal-docs | Товаросопроводительные документы
+delivery-docs | Товаротранспортные документы
+
+*Пример запроса*
+```json
+POST /orders/42/closing_docs
+
+{
+  "deal-docs": [
+    {"document": "base64", "name": "Товаросопроводительный документ 1"}
+  ],
+  "delivery-docs": [
+    {"document": "base64", "name": "Товаротранспортный документ 1"}
+  ]
+}
+```
+
+*Пример ответа*
+```json
+{
+  "status": "ok"
+}
+```
+
+
+## <a name="settings">Настройки</a>
 Настроить коллбек url `POST /settings` добавив переменную
 
 Переменные | Данные
 ------------ | -------------
 callback_url | ссылка (String)
 
-Посмотреть настройки  `GET /settings`
+Посмотреть настройки `GET /settings`
 
 *Пример запроса*
 
 ```json
 POST /settings
-  {
-   "callback_url": "https://example.com/callback/url"
-  }
+
+{
+  "callback_url": "https://example.com/callback/url"
+}
 ```
 По запросу коллбек приходит GET запросом, с параметрами `status`, `orderId(id сделки + _ + случайное число (11_a43234) )` и `price` для аутентификации запроса используется хедер `X-Auth`
 
@@ -1111,8 +1366,8 @@ X-Auth содержит `hmac`, который считается следующ
 ` $fullReqUrl = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"`
 ` $result = hash_hmac("SHA256", $apiKey . "-" . $fullReqUrl, $apiSecret);`
 
-## <a name="errors">Другие ошибки</a>
 
+## <a name="errors">Другие ошибки</a>
 **`“These aren't the droids you're looking for"`** - неправильный url
 
 **`"Jim! She's gonna blow!\n id is a restricted primary key"`** -  данные нельзя поменять
@@ -1123,8 +1378,8 @@ X-Auth содержит `hmac`, который считается следующ
 
 ### Дополнительные возможности
 
-## <a name="acquiring">Эквайринг за доставку</a>
 
+## <a name="acquiring">Эквайринг за доставку</a>
 При [создании сделки](#create) нужно дополнительно передать параметры:
 
 Переменные | Данные
@@ -1144,8 +1399,8 @@ consumer_delivery_cost | стоимость доставки для покупа
 **Второстепенные** | |
 consumer_cancellation_cost | штраф при отмене.Может вычитаться из суммы сделки, возвращаемой покупателю при отмене. Может использоваться как оплата обратной доставки при возврате товара,
 
-## <a name="preauth">Преавторизация платежей</a>
 
+## <a name="preauth">Преавторизация платежей</a>
 Для пользователя процесс преавторизации полностью аналогичен процессу оплаты.
 При преавторизации у пользователя на карте блокируются денежные средства, необходимые для оплаты сделки, на срок - 3 дня.
 В течение этого срока SafeCrow должен получить подтверждение или отмену преавторизации. На 4-ый день SafeCrow отменяет блокировку денежных средств на карте пользователя.
@@ -1153,10 +1408,11 @@ consumer_cancellation_cost | штраф при отмене.Может вычи�
 
 *Пример запроса:*
 
-```
+```json
 POST /orders/:order_id/preauth
+
 {
-   "redirect_url": "http://example.com/redirect/url"
+  "redirect_url": "http://example.com/redirect/url"
 }
 ```
 
@@ -1177,39 +1433,46 @@ redirect_url  | ссылка на страницу, куда будет напр
 
 *Пример запроса*
 
-```
+```json
 POST /orders/:order_id/preauth/confirm
+
 {
-   "reason": "Some reason"
+  "reason": "Some reason"
 }
 ```
 
 *Пример ответа:*
 
-```
+```json
 {
-    "id": 30,
-    "description": "something",
-    "price": 10000,
-    "supplier_id": 98918,
-    "consumer_id": 98917,
-    "status": "preauthorized",
-    "consumer_payout_method_id": null,
-    "supplier_payout_method_id": 28198,
-    "consumer_payout_method_type": "CreditCard",
-    "supplier_payout_method_type": "CreditCard",
-    "consumer_service_cost": 500,
-    "supplier_service_cost": 500,
-    "consumer_delivery_cost": 0,
-    "supplier_delivery_cost": 0,
-    "consumer_cancellation_cost": 0,
-    "discount": 0,
-    "consumer_payment_method_type": "CreditCard",
-    "consumer_payment_method_id": null,
-    "created_at": "2019-06-17T14:35:08+03:00",
-    "updated_at": "2019-06-17T16:40:40+03:00",
-    "extra": {
-    }
+  "id": 30,
+  "description": "something",
+  "price": 10000,
+  "supplier_id": 98918,
+  "consumer_id": 98917,
+  "status": "preauthorized",
+  "consumer_payout_method_id": null,
+  "supplier_payout_method_id": 28198,
+  "consumer_payout_method_type": "CreditCard",
+  "supplier_payout_method_type": "CreditCard",
+  "consumer_service_cost": 500,
+  "supplier_service_cost": 500,
+  "consumer_delivery_cost": 0,
+  "supplier_delivery_cost": 0,
+  "consumer_cancellation_cost": 0,
+  "discount": 0,
+  "consumer_payment_method_type": "CreditCard",
+  "consumer_payment_method_id": null,
+  "created_at": "2019-06-17T14:35:08+03:00",
+  "updated_at": "2019-06-17T16:40:40+03:00",
+  "foreign_supplier_payout_method_id": null,
+  "foreign_consumer_payout_method_id": null,
+  "foreign_supplier_payout_method_type": null,
+  "foreign_consumer_payout_method_type": null,
+  "foreign_consumer_payment_method_type": null,
+  "foreign_consumer_payment_method_id": null,
+  "extra": {
+  }
 }
 ```
 
@@ -1217,38 +1480,45 @@ POST /orders/:order_id/preauth/confirm
 
 *Пример запроса*
 
-```
+```json
 POST /orders/:order_id/preauth/release
+
 {
-   "reason": "Some reason"
+  "reason": "Some reason"
 }
 ```
 
 *Пример ответа*
 
-```
+```json
 {
-    "id": 30,
-    "description": "something",
-    "price": 10000,
-    "supplier_id": 98918,
-    "consumer_id": 98917,
-    "status": "pending",
-    "consumer_payout_method_id": null,
-    "supplier_payout_method_id": 28198,
-    "consumer_payout_method_type": "CreditCard",
-    "supplier_payout_method_type": "CreditCard",
-    "consumer_service_cost": 500,
-    "supplier_service_cost": 500,
-    "consumer_delivery_cost": 0,
-    "supplier_delivery_cost": 0,
-    "consumer_cancellation_cost": 0,
-    "discount": 0,
-    "consumer_payment_method_type": "CreditCard",
-    "consumer_payment_method_id": null,
-    "created_at": "2019-06-17T14:35:08+03:00",
-    "updated_at": "2019-06-17T16:40:40+03:00",
-    "extra": {
-    }
+  "id": 30,
+  "description": "something",
+  "price": 10000,
+  "supplier_id": 98918,
+  "consumer_id": 98917,
+  "status": "pending",
+  "consumer_payout_method_id": null,
+  "supplier_payout_method_id": 28198,
+  "consumer_payout_method_type": "CreditCard",
+  "supplier_payout_method_type": "CreditCard",
+  "consumer_service_cost": 500,
+  "supplier_service_cost": 500,
+  "consumer_delivery_cost": 0,
+  "supplier_delivery_cost": 0,
+  "consumer_cancellation_cost": 0,
+  "discount": 0,
+  "consumer_payment_method_type": "CreditCard",
+  "consumer_payment_method_id": null,
+  "created_at": "2019-06-17T14:35:08+03:00",
+  "updated_at": "2019-06-17T16:40:40+03:00",
+  "foreign_supplier_payout_method_id": null,
+  "foreign_consumer_payout_method_id": null,
+  "foreign_supplier_payout_method_type": null,
+  "foreign_consumer_payout_method_type": null,
+  "foreign_consumer_payment_method_type": null,
+  "foreign_consumer_payment_method_id": null,
+  "extra": {
+  }
 }
- ```
+```
