@@ -1327,19 +1327,39 @@ POST /orders/42/closing_docs
 
 {
   "deal-docs": [
-    {"document": "base64", "name": "Товаросопроводительный документ 1"}
+    {"document": "base64", "name": "Товаросопроводительный документ 1", "type": "text"}
   ],
   "delivery-docs": [
-    {"document": "base64", "name": "Товаротранспортный документ 1"}
+    {"document": "base64", "name": "Товаротранспортный документ 1", "type": "png"}
   ]
 }
 ```
 
 *Пример ответа*
 ```json
-{
-  "status": "ok"
-}
+[
+  {
+    "order_id": 25922,
+    "user_id": 59442,
+    "record_type": "text",
+    "data": "{\"file_path\":\"https://staging.safecrow.ru/static/trans_attachments/25922/test.txt\",\"file_name\":\"test.txt\",\"doc_type\":\"deal-docs\"}",
+    "created_at": "2019-08-05T15:35:21+03:00"
+  },
+  {
+    "order_id": 25922,
+    "user_id": 59442,
+    "record_type": "png",
+    "data": "{\"file_path\":\"https://staging.safecrow.ru/static/trans_attachments/25922/test2.png\",\"file_name\":\"test2.png\",\"doc_type\":\"deal-docs\"}",
+    "created_at": "2019-08-05T15:35:21+03:00"
+  },
+  {
+    "order_id": 25922,
+    "user_id": 59442,
+    "record_type": "text",
+    "data": "{\"file_path\":\"https://staging.safecrow.ru/static/trans_attachments/25922/test3.txt\",\"file_name\":\"test3.txt\",\"doc_type\":\"delivery-docs\"}",
+    "created_at": "2019-08-05T15:35:21+03:00"
+  }
+]
 ```
 
 
