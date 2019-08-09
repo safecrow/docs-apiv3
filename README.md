@@ -1327,19 +1327,32 @@ POST /orders/42/closing_docs
 
 {
   "deal-docs": [
-    {"document": "base64", "name": "Товаросопроводительный документ 1"}
+    {"document": "base64", "name": "Товаросопроводительный документ 1", "type": "text"}
   ],
   "delivery-docs": [
-    {"document": "base64", "name": "Товаротранспортный документ 1"}
+    {"document": "base64", "name": "Товаротранспортный документ 1", "type": "pdf"}
   ]
 }
 ```
 
 *Пример ответа*
 ```json
-{
-  "status": "ok"
-}
+[
+  {
+    "order_id": 25922,
+    "user_id": 59442,
+    "record_type": "pdf",
+    "data": "{\"file_path\":\"https://staging.safecrow.ru/static/trans_attachments/25922/test.pdf\",\"file_name\":\"test.pdf\",\"doc_type\":\"deal-docs\"}",
+    "created_at": "2019-08-05T15:35:21+03:00"
+  },
+  {
+    "order_id": 25922,
+    "user_id": 59442,
+    "record_type": "pdf",
+    "data": "{\"file_path\":\"https://staging.safecrow.ru/static/trans_attachments/25922/test3.pdf\",\"file_name\":\"test3.pdf\",\"doc_type\":\"delivery-docs\"}",
+    "created_at": "2019-08-05T15:35:21+03:00"
+  }
+]
 ```
 
 
