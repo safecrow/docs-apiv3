@@ -321,7 +321,7 @@ service_cost_payer | “50/50” или “consumer” или “supplier”
 **Второстепенные** |
 consumer_cancellation_cost | штраф покупателя за отмену. сумма в копейках
 with_foreign | Как минимум одна из сторон сделки - нерезидент РФ [true\false]
-]
+
 *Пример запроса*
 
 ```json
