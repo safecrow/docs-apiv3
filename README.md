@@ -1342,9 +1342,22 @@ POST /orders/42/closing_docs
 
 *Пример ответа*
 ```json
-{
-  "status": "ok"
-}
+[
+  {
+    "order_id": 37774,
+    "user_id": 99033,
+    "record_type": "zip",
+    "data": {"file_path":"https://staging.safecrow.ru/static/trans_attachments/37774/sdf.zip","file_name":"sdf.zip","doc_type":"deal-docs"},
+    "created_at": "2019-09-16T16:20:27+03:00"
+  },
+  {
+    "order_id": 37774,
+    "user_id": 99033,
+    "record_type": "pdf",
+    "data": {"file_path":"https://staging.safecrow.ru/static/trans_attachments/37774/sfg.pdf","file_name":"sfg.pdf","doc_type":"delivery-docs"},
+    "created_at": "2019-09-16T16:20:27+03:00"
+  }
+]
 ```
 
 
