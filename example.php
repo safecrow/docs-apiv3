@@ -5,7 +5,7 @@ $api_secret = "**** YOUR API SECRET ****";
 $prefix = "/api/v3";
 
 // GET method example
-$endpoint = '/users?email=test@example.com';
+$endpoint = '/users?email=test@gmail.com';
 $data     = $api_key . "GET" . $prefix . $endpoint;
 $hmac     = hash_hmac("SHA256", $data, $api_secret);
 
@@ -21,7 +21,7 @@ curl_close($ch);
 echo "BODY: {$body}";
 
 // POST method example
-$json = [ 'name' => 'John Doe', 'email' => 'test@example.com' ];
+$json = [ 'name' => 'John Doe', 'email' => 'coolemail@gmail.com' ];
 $endpoint = '/users';
 $data     = $api_key . "POST" . $prefix . $endpoint . json_encode($json);
 $hmac     = hash_hmac("SHA256", $data, $api_secret);
