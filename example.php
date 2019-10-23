@@ -21,7 +21,7 @@ curl_close($ch);
 echo "BODY: {$body}";
 
 // POST method example
-$json = [ 'email' => 'test@example.com' ];
+$json = [ 'name' => 'John Doe', 'email' => 'test@example.com' ];
 $endpoint = '/users';
 $data     = $api_key . "POST" . $prefix . $endpoint . json_encode($json);
 $hmac     = hash_hmac("SHA256", $data, $api_secret);
@@ -38,3 +38,4 @@ $body = curl_exec($ch) . "\n";
 print_r(curl_getinfo($ch));
 curl_close($ch);
 echo "BODY: {$body}";
+?>
