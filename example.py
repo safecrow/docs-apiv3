@@ -11,7 +11,7 @@ api_secret = b"**** YOUR API SECRET ****"
 # GET method example
 
 prefix   = "/api/v3"
-endpoint = "/users?email=test@example.com"
+endpoint = "/users?email=test@gmail.com"
 
 data = (api_key + "GET" + prefix + endpoint).encode('utf-8')
 
