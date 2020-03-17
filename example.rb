@@ -8,7 +8,7 @@ api_secret = "**** YOUR API SECRET ****"
 # GET method exmaple 
 
 prefix   = '/api/v3'
-endpoint = '/users?email=test@example.com'
+endpoint = '/users?email=test@gmail.com'
 
 data = api_key + "GET" + prefix + endpoint
 
